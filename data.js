@@ -104,34 +104,15 @@ const DB = {
     return SCRIPT_URL !== 'PASTE_YOUR_SCRIPT_URL_HERE' && SCRIPT_URL.startsWith('https://');
   },
 
-  // Generic POST to Apps Script
-  async post(action, payload = {}) {
+  // All requests go via GET to avoid CORS issues with Apps Script
+  async call(action, params = {}) {
     if (!this.isConnected()) {
       console.warn('[DB] Sheet not connected — running in local mode');
       return { ok: false, local: true };
     }
     try {
-      const res = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, ...payload }),
-        mode: 'cors'
-      });
-      return await res.json();
-    } catch (e) {
-      console.error('[DB] fetch error', e);
-      return { ok: false, error: e.message };
-    }
-  },
-
-  // Generic GET from Apps Script
-  async get(action, params = {}) {
-    if (!this.isConnected()) {
-      return { ok: false, local: true };
-    }
-    try {
       const qs = new URLSearchParams({ action, ...params }).toString();
-      const res = await fetch(`${SCRIPT_URL}?${qs}`, { mode: 'cors' });
+      const res = await fetch(`${SCRIPT_URL}?${qs}`);
       return await res.json();
     } catch (e) {
       console.error('[DB] fetch error', e);
@@ -151,7 +132,7 @@ const DB = {
     localStorage.setItem('p24_lastseen', JSON.stringify(lastSeen));
 
     // Also write to Sheet
-    return this.post('recordLogin', { name, timestamp: new Date().toISOString() });
+    return this.call('recordLogin', { name, timestamp: new Date().toISOString() });
   },
 
   getLocalLogins() {
@@ -163,7 +144,7 @@ const DB = {
   },
 
   async getLogins() {
-    const result = await this.get('getLogins');
+    const result = await this.call('getLogins');
     if (result.ok) return result.data;
     return this.getLocalLogins();
   },
@@ -176,7 +157,7 @@ const DB = {
     agreements[name] = timestamp;
     localStorage.setItem('p24_agreements', JSON.stringify(agreements));
     // Write to Sheet
-    return this.post('signAgreement', { name, timestamp });
+    return this.call('signAgreement', { name, timestamp });
   },
 
   getLocalAgreements() {
@@ -184,7 +165,7 @@ const DB = {
   },
 
   async getAgreements() {
-    const result = await this.get('getAgreements');
+    const result = await this.call('getAgreements');
     if (result.ok) return result.data;
     return this.getLocalAgreements();
   },
@@ -207,7 +188,7 @@ const DB = {
     all[name][connector] = value;
     localStorage.setItem('p24_connectors', JSON.stringify(all));
     // Write to Sheet
-    return this.post('toggleConnector', { name, connector, value });
+    return this.call('toggleConnector', { name, connector, value: String(value) });
   },
 
   getLocalConnectors() {
@@ -215,7 +196,7 @@ const DB = {
   },
 
   async getConnectors() {
-    const result = await this.get('getConnectors');
+    const result = await this.call('getConnectors');
     if (result.ok) return result.data;
     return this.getLocalConnectors();
   },
@@ -233,7 +214,7 @@ const DB = {
     updates.push(update);
     localStorage.setItem('p24_updates', JSON.stringify(updates));
     // Write to Sheet
-    await this.post('addUpdate', update);
+    await this.call('addUpdate', update);
     return update;
   },
 
@@ -243,7 +224,7 @@ const DB = {
   },
 
   async getUpdates() {
-    const result = await this.get('getUpdates');
+    const result = await this.call('getUpdates');
     if (result.ok && result.data && result.data.length > 0) return result.data;
     return this.getLocalUpdates();
   },
