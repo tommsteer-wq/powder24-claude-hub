@@ -1,1123 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Powder24 × Claude — AI Hub</title>
-<style>
-  /* ===== RESET & BASE ===== */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0a0a0a;
-    --bg2: #111111;
-    --bg3: #1a1a1a;
-    --border: rgba(255,255,255,0.08);
-    --cyan: #00c8c8;
-    --cyan-soft: rgba(0,200,200,0.15);
-    --pink: #e040fb;
-    --grad: linear-gradient(135deg, #00c8c8, #e040fb);
-    --grad-h: linear-gradient(135deg, #00e5e5, #f570ff);
-    --white: #ffffff;
-    --white80: rgba(255,255,255,0.8);
-    --white40: rgba(255,255,255,0.4);
-    --white10: rgba(255,255,255,0.06);
-    --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --radius: 12px;
-    --radius-sm: 8px;
-  }
-
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
-  html, body {
-    height: 100%;
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--white);
-    overflow-x: hidden;
-  }
-
-  /* ===== SCROLLBAR ===== */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: rgba(0,200,200,0.3); border-radius: 3px; }
-
-  /* ===== SCREENS ===== */
-  .screen { display: none; min-height: 100vh; }
-  .screen.active { display: flex; }
-
-  /* ===== LOGIN SCREEN ===== */
-  #screen-login {
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 40px 20px 60px;
-    background: var(--bg);
-    position: relative;
-    overflow: hidden;
-  }
-
-  #screen-login::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1600&q=80') center/cover no-repeat;
-    opacity: 0.12;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  #screen-login > * { position: relative; z-index: 1; }
-
-  .login-header {
-    text-align: center;
-    margin-bottom: 48px;
-  }
-
-  .login-logo {
-    font-size: 42px;
-    font-weight: 900;
-    letter-spacing: -2px;
-    color: var(--white);
-    margin-bottom: 8px;
-  }
-
-  .login-logo span {
-    background: var(--grad);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .login-sub {
-    font-size: 15px;
-    color: var(--white40);
-    letter-spacing: 0.5px;
-  }
-
-  .login-divider {
-    width: 40px;
-    height: 2px;
-    background: var(--grad);
-    margin: 16px auto;
-    border-radius: 2px;
-  }
-
-  .login-title {
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--white40);
-    text-align: center;
-    margin-bottom: 24px;
-  }
-
-  .team-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-    max-width: 900px;
-    width: 100%;
-  }
-
-  .team-btn {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 18px 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .team-btn::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--grad);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .team-btn:hover { border-color: var(--cyan); transform: translateY(-2px); }
-  .team-btn:hover::before { opacity: 0.08; }
-
-  .team-btn .avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: var(--grad);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 16px;
-    color: var(--white);
-    margin: 0 auto 10px;
-    position: relative;
-    z-index: 1;
-  }
-
-  .team-btn .name {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--white);
-    position: relative;
-    z-index: 1;
-  }
-
-  .team-btn .role-tag {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--cyan);
-    position: relative;
-    z-index: 1;
-    margin-top: 2px;
-  }
-
-  /* ===== PIN MODAL ===== */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(8px);
-  }
-  .modal-overlay.active { display: flex; }
-
-  .modal {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 40px;
-    width: 340px;
-    text-align: center;
-  }
-
-  .modal h3 {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-
-  .modal p {
-    color: var(--white40);
-    font-size: 14px;
-    margin-bottom: 28px;
-  }
-
-  .pin-display {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    margin-bottom: 28px;
-  }
-
-  .pin-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: 2px solid var(--white40);
-    transition: all 0.2s;
-  }
-
-  .pin-dot.filled { background: var(--cyan); border-color: var(--cyan); }
-
-  .pin-pad {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-
-  .pin-key {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 14px;
-    font-size: 20px;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--white);
-    transition: all 0.15s;
-  }
-  .pin-key:hover { background: var(--cyan-soft); border-color: var(--cyan); }
-
-  .pin-error {
-    color: #ff5252;
-    font-size: 13px;
-    min-height: 20px;
-  }
-
-  .btn-secondary {
-    background: none;
-    border: none;
-    color: var(--white40);
-    font-size: 13px;
-    cursor: pointer;
-    margin-top: 12px;
-    text-decoration: underline;
-  }
-
-  /* ===== MAIN APP ===== */
-  #screen-app {
-    flex-direction: column;
-    min-height: 100vh;
-  }
-
-  /* ===== TOP NAV ===== */
-  .topnav {
-    background: rgba(10,10,10,0.95);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 60px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .nav-brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 800;
-    font-size: 16px;
-    letter-spacing: -0.5px;
-  }
-
-  .nav-brand .logo-pill {
-    background: var(--grad);
-    color: white;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-
-  .nav-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .nav-user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    color: var(--white80);
-  }
-
-  .nav-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--grad);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 12px;
-  }
-
-  .btn-logout {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--white40);
-    font-size: 12px;
-    padding: 6px 12px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-logout:hover { border-color: var(--white40); color: var(--white); }
-
-  /* ===== TAB BAR ===== */
-  .tab-bar {
-    background: var(--bg2);
-    border-bottom: 1px solid var(--border);
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    overflow-x: auto;
-  }
-
-  .tab-bar::-webkit-scrollbar { height: 0; }
-
-  .tab-btn {
-    padding: 14px 18px;
-    background: none;
-    border: none;
-    border-bottom: 2px solid transparent;
-    color: var(--white40);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .tab-btn:hover { color: var(--white); }
-  .tab-btn.active { color: var(--cyan); border-bottom-color: var(--cyan); }
-  .tab-btn.admin-tab { color: var(--pink); margin-left: auto; }
-  .tab-btn.admin-tab.active { border-bottom-color: var(--pink); }
-
-  /* ===== TAB CONTENT ===== */
-  .tab-content { display: none; flex: 1; }
-  .tab-content.active { display: block; }
-
-  /* ===== WELCOME TAB ===== */
-  .welcome-hero {
-    position: relative;
-    height: 380px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .welcome-hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url('https://images.unsplash.com/photo-1544516553-de3d669c9bb2?w=1600&q=80') center/cover no-repeat;
-    opacity: 0.25;
-  }
-
-  .welcome-hero::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, transparent 40%, var(--bg) 100%);
-  }
-
-  .welcome-hero-content {
-    position: relative;
-    z-index: 1;
-    text-align: center;
-    padding: 0 20px;
-  }
-
-  .welcome-hero-content h1 {
-    font-size: clamp(32px, 5vw, 56px);
-    font-weight: 900;
-    letter-spacing: -2px;
-    line-height: 1.05;
-    margin-bottom: 16px;
-  }
-
-  .welcome-hero-content h1 span {
-    background: var(--grad);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .welcome-hero-content p {
-    font-size: 17px;
-    color: var(--white80);
-    max-width: 560px;
-    margin: 0 auto;
-    line-height: 1.6;
-  }
-
-  .welcome-body {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 48px 24px 80px;
-  }
-
-  .welcome-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
-    margin-bottom: 48px;
-  }
-
-  .wcard {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-    transition: border-color 0.2s;
-  }
-  .wcard:hover { border-color: rgba(0,200,200,0.3); }
-
-  .wcard-icon {
-    font-size: 28px;
-    margin-bottom: 14px;
-  }
-
-  .wcard h3 {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-
-  .wcard p {
-    font-size: 14px;
-    color: var(--white40);
-    line-height: 1.6;
-  }
-
-  .welcome-message {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--cyan);
-    border-radius: var(--radius);
-    padding: 32px;
-    line-height: 1.8;
-  }
-
-  .welcome-message h2 {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 16px;
-  }
-
-  .welcome-message p {
-    color: var(--white80);
-    font-size: 15px;
-    margin-bottom: 14px;
-  }
-
-  .welcome-message p:last-child { margin-bottom: 0; }
-
-  /* ===== AGREEMENT TAB ===== */
-  .tab-page {
-    max-width: 840px;
-    margin: 0 auto;
-    padding: 48px 24px 80px;
-  }
-
-  .page-header {
-    margin-bottom: 36px;
-  }
-
-  .page-header h2 {
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: -1px;
-    margin-bottom: 8px;
-  }
-
-  .page-header p {
-    color: var(--white40);
-    font-size: 15px;
-  }
-
-  .grad-line {
-    width: 50px;
-    height: 3px;
-    background: var(--grad);
-    border-radius: 2px;
-    margin: 16px 0;
-  }
-
-  .agreement-doc {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 36px;
-    margin-bottom: 28px;
-    line-height: 1.8;
-  }
-
-  .agreement-doc h3 {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: var(--cyan);
-  }
-
-  .agreement-doc h4 {
-    font-size: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--white40);
-    margin: 24px 0 10px;
-  }
-
-  .agreement-doc p {
-    color: var(--white80);
-    font-size: 14px;
-    margin-bottom: 12px;
-  }
-
-  .agreement-doc ul {
-    padding-left: 20px;
-    color: var(--white80);
-    font-size: 14px;
-    margin-bottom: 12px;
-  }
-
-  .agreement-doc ul li { margin-bottom: 6px; }
-
-  .agreement-footer {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .agree-check {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    cursor: pointer;
-  }
-
-  .agree-check input[type=checkbox] {
-    width: 20px;
-    height: 20px;
-    accent-color: var(--cyan);
-    margin-top: 2px;
-    flex-shrink: 0;
-    cursor: pointer;
-  }
-
-  .agree-check span {
-    font-size: 14px;
-    color: var(--white80);
-    line-height: 1.5;
-  }
-
-  .btn-primary {
-    background: var(--grad);
-    border: none;
-    border-radius: 24px;
-    padding: 13px 28px;
-    color: white;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    width: fit-content;
-  }
-  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-  .signed-badge {
-    display: none;
-    background: rgba(0,200,100,0.15);
-    border: 1px solid rgba(0,200,100,0.4);
-    border-radius: var(--radius-sm);
-    padding: 14px 20px;
-    color: #00c864;
-    font-size: 14px;
-    font-weight: 600;
-    gap: 8px;
-    align-items: center;
-  }
-  .signed-badge.visible { display: flex; }
-
-  /* ===== UPDATES TAB ===== */
-  .updates-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .update-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px 28px;
-    transition: border-color 0.2s;
-    cursor: pointer;
-  }
-  .update-card:hover { border-color: rgba(0,200,200,0.3); }
-
-  .update-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-  }
-
-  .update-tag {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    background: var(--cyan-soft);
-    color: var(--cyan);
-  }
-
-  .update-date {
-    font-size: 12px;
-    color: var(--white40);
-  }
-
-  .update-card h3 {
-    font-size: 17px;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-
-  .update-card p {
-    font-size: 14px;
-    color: var(--white40);
-    line-height: 1.6;
-  }
-
-  .add-update-form {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-    margin-bottom: 32px;
-  }
-
-  .add-update-form h3 {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: var(--cyan);
-  }
-
-  .form-row {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .form-row label {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--white40);
-  }
-
-  .form-row input,
-  .form-row textarea,
-  .form-row select {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    color: var(--white);
-    font-family: var(--font);
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
-    resize: vertical;
-  }
-
-  .form-row input:focus,
-  .form-row textarea:focus,
-  .form-row select:focus { border-color: var(--cyan); }
-
-  .form-row textarea { min-height: 90px; }
-  .form-row select option { background: var(--bg2); }
-
-  /* ===== CONNECTORS TAB ===== */
-  .connectors-wrap {
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-  }
-
-  .connectors-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-
-  .connectors-table th {
-    background: var(--bg3);
-    padding: 14px 16px;
-    text-align: center;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--white40);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-  }
-
-  .connectors-table th:first-child {
-    text-align: left;
-    position: sticky;
-    left: 0;
-    background: var(--bg3);
-    z-index: 2;
-  }
-
-  .connectors-table td {
-    padding: 12px 16px;
-    text-align: center;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-  }
-
-  .connectors-table td:first-child {
-    text-align: left;
-    font-weight: 600;
-    position: sticky;
-    left: 0;
-    background: var(--bg2);
-    z-index: 1;
-  }
-
-  .connectors-table tr:hover td { background: rgba(0,200,200,0.04); }
-  .connectors-table tr:hover td:first-child { background: rgba(0,200,200,0.08); }
-
-  .connectors-table tr.my-row td { background: rgba(0,200,200,0.06); }
-  .connectors-table tr.my-row td:first-child { background: rgba(0,200,200,0.12); color: var(--cyan); }
-
-  .conn-check {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--cyan);
-    cursor: pointer;
-  }
-
-  .conn-check:disabled { cursor: not-allowed; opacity: 0.3; }
-
-  .connector-icon {
-    display: block;
-    font-size: 16px;
-    margin-bottom: 2px;
-  }
-
-  /* ===== LEARN TAB ===== */
-  .academy-hero {
-    background: linear-gradient(135deg, rgba(0,200,200,0.12), rgba(224,64,251,0.08));
-    border: 1px solid rgba(0,200,200,0.25);
-    border-radius: 16px;
-    padding: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 28px;
-    margin-bottom: 40px;
-    flex-wrap: wrap;
-  }
-
-  .academy-hero-text h3 {
-    font-size: 22px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    letter-spacing: -0.5px;
-  }
-
-  .academy-hero-text p {
-    color: var(--white80);
-    font-size: 15px;
-    line-height: 1.6;
-    max-width: 500px;
-    margin-bottom: 20px;
-  }
-
-  .academy-hero-text .course-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 24px;
-  }
-
-  .course-pill {
-    background: rgba(0,200,200,0.12);
-    border: 1px solid rgba(0,200,200,0.25);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--cyan);
-  }
-
-  .academy-cta {
-    background: var(--grad);
-    border: none;
-    border-radius: 24px;
-    padding: 14px 32px;
-    color: white;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: opacity 0.2s, transform 0.2s;
-  }
-  .academy-cta:hover { opacity: 0.9; transform: translateY(-1px); }
-
-  .academy-hero-badge {
-    text-align: center;
-    flex-shrink: 0;
-  }
-
-  .academy-hero-badge .badge-icon {
-    font-size: 64px;
-    line-height: 1;
-    margin-bottom: 8px;
-  }
-
-  .academy-hero-badge p {
-    font-size: 12px;
-    color: var(--white40);
-    max-width: 120px;
-    margin: 0 auto;
-  }
-
-  .resource-section-title {
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: var(--white40);
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .resource-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    margin-bottom: 40px;
-  }
-
-  .resource-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 22px 24px;
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .resource-card::after {
-    content: '↗';
-    position: absolute;
-    top: 18px;
-    right: 18px;
-    font-size: 14px;
-    color: var(--white40);
-    transition: color 0.2s;
-  }
-
-  .resource-card:hover { border-color: rgba(0,200,200,0.4); transform: translateY(-2px); }
-  .resource-card:hover::after { color: var(--cyan); }
-
-  .resource-card .rc-tag {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--cyan);
-    margin-bottom: 8px;
-  }
-
-  .resource-card h4 {
-    font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 6px;
-    padding-right: 24px;
-  }
-
-  .resource-card p {
-    font-size: 13px;
-    color: var(--white40);
-    line-height: 1.55;
-  }
-
-  .resource-card .rc-time {
-    font-size: 11px;
-    color: var(--white40);
-    margin-top: 10px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .resource-card.featured {
-    border-color: rgba(0,200,200,0.3);
-    background: linear-gradient(135deg, rgba(0,200,200,0.08), rgba(224,64,251,0.04));
-  }
-
-  /* ===== ADMIN TAB ===== */
-  .admin-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 36px;
-  }
-
-  .stat-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    text-align: center;
-  }
-
-  .stat-card .stat-val {
-    font-size: 40px;
-    font-weight: 900;
-    letter-spacing: -2px;
-    background: var(--grad);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1;
-    margin-bottom: 6px;
-  }
-
-  .stat-card .stat-label {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--white40);
-  }
-
-  .admin-section {
-    margin-bottom: 36px;
-  }
-
-  .admin-section h3 {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 16px;
-    color: var(--white80);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-
-  .admin-table th {
-    background: var(--bg3);
-    padding: 12px 16px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--white40);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .admin-table td {
-    padding: 12px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    color: var(--white80);
-  }
-
-  .admin-table tr:last-child td { border-bottom: none; }
-
-  .status-pill {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .status-yes { background: rgba(0,200,100,0.15); color: #00c864; }
-  .status-no  { background: rgba(255,255,255,0.06); color: var(--white40); }
-
-  .bar-wrap {
-    background: rgba(255,255,255,0.06);
-    border-radius: 4px;
-    height: 6px;
-    overflow: hidden;
-    width: 100px;
-    display: inline-block;
-  }
-
-  .bar-fill {
-    height: 100%;
-    background: var(--grad);
-    border-radius: 4px;
-    transition: width 0.8s ease;
-  }
-
-  /* ===== FOOTER ===== */
-  .app-footer {
-    background: var(--bg2);
-    border-top: 1px solid var(--border);
-    padding: 20px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 12px;
-    color: var(--white40);
-  }
-
-  /* ===== RESPONSIVE ===== */
-  @media (max-width: 600px) {
-    .team-grid { grid-template-columns: repeat(3, 1fr); }
-    .tab-btn { padding: 12px 12px; font-size: 12px; }
-    .welcome-body { padding: 24px 16px 60px; }
-    .tab-page { padding: 24px 16px 60px; }
-    .admin-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-
-  /* ===== TOAST ===== */
-  .toast {
-    position: fixed;
-    bottom: 32px;
-    right: 32px;
-    background: var(--bg3);
-    border: 1px solid var(--cyan);
-    border-radius: var(--radius-sm);
-    padding: 14px 20px;
-    font-size: 14px;
-    color: var(--white);
-    z-index: 9999;
-    transform: translateY(100px);
-    opacity: 0;
-    transition: all 0.3s;
-    max-width: 300px;
-  }
-
-  .toast.show { transform: translateY(0); opacity: 1; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Powder24 × Claude — AI Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -1159,12 +48,13 @@
       <button class="pin-key" onclick="pinPress('clear')" style="font-size:12px;color:var(--white40)">CLR</button>
     </div>
     <div class="pin-error" id="pinError"></div>
-    <button class="btn-secondary" onclick="closePinModal()">Cancel — log in without admin</button>
+    <button class="btn-ghost" onclick="closePinModal()">Cancel — log in without admin</button>
   </div>
 </div>
 
 <!-- ===================== MAIN APP ===================== -->
 <div id="screen-app" class="screen">
+
   <!-- Top Nav -->
   <nav class="topnav">
     <div class="nav-brand">
@@ -1182,12 +72,12 @@
 
   <!-- Tab Bar -->
   <div class="tab-bar" id="tabBar">
-    <button class="tab-btn active" onclick="switchTab('welcome', this)" data-tab="welcome">🏔️ Home</button>
-    <button class="tab-btn" onclick="switchTab('agreement', this)" data-tab="agreement">✍️ Agreement</button>
-    <button class="tab-btn" onclick="switchTab('updates', this)" data-tab="updates">📰 Updates</button>
-    <button class="tab-btn" onclick="switchTab('connectors', this)" data-tab="connectors">🔌 Connectors</button>
-    <button class="tab-btn" onclick="switchTab('learn', this)" data-tab="learn">🎓 Learn</button>
-    <button class="tab-btn admin-tab" id="adminTabBtn" onclick="switchTab('admin', this)" data-tab="admin" style="display:none">⚙️ Admin</button>
+    <button class="tab-btn active" onclick="switchTab('welcome', this)">🏔️ Home</button>
+    <button class="tab-btn" onclick="switchTab('agreement', this)">✍️ Agreement</button>
+    <button class="tab-btn" onclick="switchTab('updates', this)">📰 Updates</button>
+    <button class="tab-btn" onclick="switchTab('connectors', this)">🔌 Connectors</button>
+    <button class="tab-btn" onclick="switchTab('learn', this)">🎓 Learn</button>
+    <button class="tab-btn admin-tab" id="adminTabBtn" onclick="switchTab('admin', this)" style="display:none">⚙️ Admin</button>
   </div>
 
   <!-- == HOME TAB == -->
@@ -1198,7 +88,7 @@
         <p>Your central resource for everything Claude — get set up, stay informed, and help shape how we work smarter.</p>
       </div>
     </div>
-    <div class="welcome-body">
+    <div class="tab-page">
       <div class="welcome-cards">
         <div class="wcard">
           <div class="wcard-icon">✍️</div>
@@ -1240,52 +130,42 @@
       </div>
       <div class="agreement-doc">
         <h3>Powder24 — Claude AI Usage Policy</h3>
-
         <h4>1. Purpose</h4>
         <p>Powder24 has provided access to Claude, an AI assistant developed by Anthropic, to help team members work more effectively. This policy exists to ensure we use Claude responsibly, professionally, and in a way that protects both the company and our people.</p>
-
         <h4>2. Appropriate Use</h4>
         <ul>
           <li>Claude may be used to assist with writing, research, planning, summarising, brainstorming, and other work-related tasks.</li>
           <li>Always apply your own professional judgement to any output Claude produces — treat it as a helpful starting point, not a final answer.</li>
           <li>Claude can make mistakes. Verify important facts, figures, and advice before acting on them.</li>
         </ul>
-
         <h4>3. Confidentiality</h4>
         <ul>
           <li>Do not input sensitive personal data (customer details, payment information, private employee records) into Claude.</li>
           <li>Treat conversations with Claude as you would an external tool — be mindful of what you share.</li>
           <li>Do not share your Claude login credentials with anyone else.</li>
         </ul>
-
         <h4>4. Professional Standards</h4>
         <ul>
           <li>Claude should not be used to produce content that is harmful, misleading, discriminatory, or that could bring Powder24 into disrepute.</li>
           <li>Do not use Claude to impersonate colleagues, clients, or partners.</li>
           <li>Any content produced with the help of AI and shared externally should be reviewed and approved as you would any other company communication.</li>
         </ul>
-
         <h4>5. Copyright & Intellectual Property</h4>
         <ul>
           <li>Be aware that AI-generated content may not always be fully original. Do not pass off AI-generated content as entirely your own original work in contexts where that would be misleading.</li>
           <li>Do not use Claude to reproduce large portions of copyrighted material.</li>
         </ul>
-
         <h4>6. Accountability</h4>
         <ul>
           <li>You are responsible for how you use Claude. The company retains the right to review usage in line with our standard IT policies.</li>
           <li>If you're ever unsure whether a particular use is appropriate, check with Tom or Lou before proceeding.</li>
         </ul>
-
         <h4>7. Updates</h4>
         <p>This policy may be updated as AI tools and best practices evolve. You'll be notified of any significant changes via this platform.</p>
-
-        <p style="margin-top: 24px; font-style: italic; color: var(--white40); font-size: 13px;">Last updated: April 2026 — Powder24 AI Team</p>
+        <p class="policy-date">Last updated: April 2026 — Powder24 AI Team</p>
       </div>
       <div class="agreement-footer">
-        <div class="signed-badge" id="signedBadge">
-          ✅ You have already signed this agreement. Thank you!
-        </div>
+        <div class="signed-badge" id="signedBadge"></div>
         <label class="agree-check" id="agreeCheck">
           <input type="checkbox" id="agreeBox" onchange="toggleSignBtn()">
           <span>I confirm that I have read and understood the Powder24 Claude AI Usage Policy, and I agree to abide by its terms.</span>
@@ -1304,7 +184,7 @@
         <p>News, tips, and important information from Tom and Lou — check back regularly.</p>
       </div>
       <div id="adminUpdateForm" style="display:none">
-        <div class="add-update-form">
+        <div class="admin-form-card">
           <h3>+ Post a New Update</h3>
           <div class="form-row">
             <label>Title</label>
@@ -1314,49 +194,49 @@
             <label>Summary</label>
             <textarea id="newUpdateBody" placeholder="Write a short summary of the update..."></textarea>
           </div>
-          <div style="display:flex; gap:12px; flex-wrap:wrap">
-            <div class="form-row" style="flex:1; min-width:140px">
-              <label>Tag</label>
-              <select id="newUpdateTag">
-                <option>New Feature</option>
-                <option>Tips & Tricks</option>
-                <option>Important</option>
-                <option>Course</option>
-                <option>News</option>
-              </select>
-            </div>
+          <div class="form-row">
+            <label>Tag</label>
+            <select id="newUpdateTag">
+              <option>New Feature</option>
+              <option>Tips & Tricks</option>
+              <option>Important</option>
+              <option>Course</option>
+              <option>News</option>
+            </select>
           </div>
-          <button class="btn-primary" onclick="addUpdate()" style="margin-top:8px">Post Update</button>
+          <button class="btn-primary" onclick="addUpdate()">Post Update</button>
         </div>
       </div>
-      <div class="updates-grid" id="updatesGrid"></div>
+      <div class="updates-grid" id="updatesGrid">
+        <div class="loading-state">Loading updates...</div>
+      </div>
     </div>
   </div>
 
   <!-- == CONNECTORS TAB == -->
   <div class="tab-content" id="tab-connectors">
-    <div class="tab-page" style="max-width:100%; padding:48px 24px 80px">
+    <div class="tab-page wide">
       <div class="page-header">
         <h2>Connector Tracker</h2>
         <div class="grad-line"></div>
         <p>Tick the connectors you've used. You can only update your own row — this helps the team see where Claude is being put to work.</p>
       </div>
       <div class="connectors-wrap">
-        <table class="connectors-table" id="connectorsTable"></table>
+        <table class="connectors-table" id="connectorsTable">
+          <tbody><tr><td class="loading-state" colspan="20">Loading...</td></tr></tbody>
+        </table>
       </div>
     </div>
   </div>
 
   <!-- == LEARN TAB == -->
   <div class="tab-content" id="tab-learn">
-    <div class="tab-page" style="max-width:1000px">
+    <div class="tab-page">
       <div class="page-header">
         <h2>Learn</h2>
         <div class="grad-line"></div>
         <p>Everything you need to get better at Claude — official courses, guides, and handpicked reads from Tom and Lou.</p>
       </div>
-
-      <!-- Anthropic Academy Hero -->
       <div class="academy-hero">
         <div class="academy-hero-text">
           <h3>🎓 Anthropic Academy</h3>
@@ -1368,9 +248,7 @@
             <span class="course-pill">Enterprise AI</span>
             <span class="course-pill">Earn Certificates</span>
           </div>
-          <a href="https://www.anthropic.com/learn" target="_blank" class="academy-cta">
-            Open Anthropic Academy ↗
-          </a>
+          <a href="https://www.anthropic.com/learn" target="_blank" class="academy-cta">Open Anthropic Academy ↗</a>
         </div>
         <div class="academy-hero-badge">
           <div class="badge-icon">🏅</div>
@@ -1378,7 +256,6 @@
         </div>
       </div>
 
-      <!-- Getting Started -->
       <div class="resource-section-title">Start here — if you're new to Claude</div>
       <div class="resource-grid">
         <a href="https://www.anthropic.com/learn" target="_blank" class="resource-card featured">
@@ -1401,13 +278,12 @@
         </a>
       </div>
 
-      <!-- Prompting Better -->
       <div class="resource-section-title">Get better results — prompting guides</div>
       <div class="resource-grid">
         <a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank" class="resource-card featured">
           <div class="rc-tag">Official Docs</div>
           <h4>Prompt Engineering Guide</h4>
-          <p>The definitive guide to writing better prompts. Covers clear instructions, examples, step-by-step reasoning, and formatting tips. This one is worth bookmarking.</p>
+          <p>The definitive guide to writing better prompts. Covers clear instructions, examples, step-by-step reasoning, and formatting tips.</p>
           <div class="rc-time">⏱ 20 min read</div>
         </a>
         <a href="https://www.anthropic.com/news/prompting-tips" target="_blank" class="resource-card">
@@ -1424,7 +300,6 @@
         </a>
       </div>
 
-      <!-- Team Accounts & Connectors -->
       <div class="resource-section-title">Using Claude as a team</div>
       <div class="resource-grid">
         <a href="https://support.claude.ai/hc/en-us/categories/22448100516883-Claude-for-Teams" target="_blank" class="resource-card">
@@ -1433,93 +308,59 @@
           <p>Everything you need to know about how our team account works — billing, sharing, admin controls, and best practices.</p>
           <div class="rc-time">⏱ Help centre</div>
         </a>
-        <a href="https://support.claude.ai/hc/en-us/articles/22321469160083" target="_blank" class="resource-card">
-          <div class="rc-tag">Feature</div>
-          <h4>Claude Projects</h4>
-          <p>How to use Claude's Projects feature to create a persistent, customised workspace — great for ongoing tasks with specific context.</p>
-          <div class="rc-time">⏱ 8 min read</div>
-        </a>
         <a href="https://www.anthropic.com/claude/connectors" target="_blank" class="resource-card">
           <div class="rc-tag">Integrations</div>
           <h4>All Available Connectors</h4>
-          <p>The full list of apps and tools Claude can connect to — from Google Workspace to Slack to GitHub. Explore what's available for your workflow.</p>
+          <p>The full list of apps and tools Claude can connect to — from Google Workspace to Slack to GitHub.</p>
           <div class="rc-time">⏱ Reference page</div>
         </a>
-      </div>
-
-      <!-- AI at Work -->
-      <div class="resource-section-title">AI at work — broader reads</div>
-      <div class="resource-grid">
         <a href="https://www.anthropic.com/news/anthropic-economic-futures" target="_blank" class="resource-card">
           <div class="rc-tag">Article</div>
           <h4>The Future of AI at Work</h4>
-          <p>Anthropic's perspective on how AI will change jobs and industries — thoughtful, balanced, and worth a read for anyone curious about the bigger picture.</p>
+          <p>Anthropic's perspective on how AI will change jobs and industries — thoughtful and worth a read.</p>
           <div class="rc-time">⏱ 15 min read</div>
-        </a>
-        <a href="https://www.anthropic.com/news/core-views-on-ai-safety" target="_blank" class="resource-card">
-          <div class="rc-tag">Safety</div>
-          <h4>Anthropic's Views on AI Safety</h4>
-          <p>Understand the principles behind how Claude was designed to be safe and helpful — useful context for why it behaves the way it does.</p>
-          <div class="rc-time">⏱ 10 min read</div>
-        </a>
-        <a href="https://www.anthropic.com/news/claude-is-a-space-to-think" target="_blank" class="resource-card">
-          <div class="rc-tag">Article</div>
-          <h4>Claude is a Space to Think</h4>
-          <p>How Anthropic thinks about Claude as a thinking partner — useful framing for getting the most out of it in your day-to-day work.</p>
-          <div class="rc-time">⏱ 5 min read</div>
         </a>
       </div>
 
-      <div style="background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:20px 24px; font-size:13px; color:var(--white40); margin-top:8px">
-        💡 <strong style="color:var(--white80)">Suggest a resource:</strong> If you find something useful, let Tom or Lou know and they'll add it to the Updates tab or this page.
+      <div class="info-note">
+        💡 <strong>Suggest a resource:</strong> If you find something useful, let Tom or Lou know and they'll add it here.
       </div>
     </div>
   </div>
 
   <!-- == ADMIN TAB == -->
   <div class="tab-content" id="tab-admin">
-    <div class="tab-page" style="max-width:1000px">
+    <div class="tab-page">
       <div class="page-header">
         <h2>Admin Dashboard</h2>
         <div class="grad-line"></div>
         <p>Usage statistics and team activity — visible to Tom and Lou only.</p>
       </div>
-
-      <!-- Stat Cards -->
-      <div class="admin-grid" id="adminStatCards"></div>
-
-      <!-- Agreement Status -->
+      <div class="admin-grid" id="adminStatCards">
+        <div class="loading-state">Loading stats...</div>
+      </div>
       <div class="admin-section">
         <h3>✍️ Agreement Sign-off Status</h3>
-        <div style="border:1px solid var(--border); border-radius:var(--radius); overflow:hidden">
+        <div class="table-wrap">
           <table class="admin-table" id="agreementTable"></table>
         </div>
       </div>
-
-      <!-- Login Activity -->
       <div class="admin-section">
         <h3>🔐 Login Activity</h3>
-        <div style="border:1px solid var(--border); border-radius:var(--radius); overflow:hidden">
+        <div class="table-wrap">
           <table class="admin-table" id="loginTable"></table>
         </div>
       </div>
-
-      <!-- Connector Adoption -->
       <div class="admin-section">
         <h3>🔌 Connector Adoption</h3>
-        <div style="border:1px solid var(--border); border-radius:var(--radius); overflow:hidden">
+        <div class="table-wrap">
           <table class="admin-table" id="connectorAdoptionTable"></table>
         </div>
       </div>
-
-      <!-- Export note -->
-      <div style="background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius); padding:20px 24px; font-size:13px; color:var(--white40); margin-top:8px">
-        💡 <strong style="color:var(--white80)">Note:</strong> Data is currently stored in your browser. Google Sheets sync can be added — speak to the developer to enable this feature and persist data across devices.
-      </div>
+      <div class="info-note" id="sheetLink"></div>
     </div>
   </div>
 
-  <!-- Footer -->
   <footer class="app-footer">
     <span>Powder24 × Claude AI Hub — internal use only</span>
     <span id="sessionInfo"></span>
@@ -1529,440 +370,7 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- ===================== JAVASCRIPT ===================== -->
-<script>
-
-// ===== DATA =====
-const TEAM = [
-  { name: "Aidan",    email: "aidan.kirsopp@powder24.co.uk",    admin: false },
-  { name: "Anna",     email: "anna.daggett@powder24.co.uk",     admin: false },
-  { name: "Cedric",   email: "cedric.henry@powder24.co.uk",     admin: false },
-  { name: "Charlotte",email: "charlotte.pendered@powder24.co.uk",admin:false },
-  { name: "Chloe",    email: "chloe.madden@powder24.co.uk",     admin: false },
-  { name: "Civir",    email: "civir.orga@powder24.co.uk",       admin: false },
-  { name: "Danny",    email: "danny.nugent@powder24.co.uk",     admin: false },
-  { name: "Dave",     email: "dave.greenbrown@powder24.co.uk",  admin: false },
-  { name: "Estelle",  email: "estelle.gadrat@powder24.co.uk",   admin: false },
-  { name: "Jane",     email: "jane.bolton@powder24.co.uk",      admin: false },
-  { name: "Keegan",   email: "keegan.kevern@powder24.co.uk",    admin: false },
-  { name: "Lewis",    email: "lewis.atkinson@powder24.co.uk",   admin: false },
-  { name: "Lou",      email: "lou.jennings@powder24.co.uk",     admin: true  },
-  { name: "Shawsy",   email: "mark.shaw@powder24.co.uk",        admin: false },
-  { name: "Ollie",    email: "ollie.hart@powder24.co.uk",       admin: false },
-  { name: "Paul",     email: "paul.clerkin@powder24.co.uk",     admin: false },
-  { name: "Richard",  email: "richard.garside@powder24.co.uk",  admin: false },
-  { name: "Passmore", email: "sam.passmore@powder24.co.uk",     admin: false },
-  { name: "Tom",      email: "tom.steer@nucotravel.com",        admin: true  },
-  { name: "Umad",     email: "umad.ali@powder24.co.uk",         admin: false },
-  { name: "Will",     email: "will.coley@powder24.co.uk",       admin: false },
-];
-
-const CONNECTORS = [
-  { name: "Google Docs",   icon: "📄" },
-  { name: "Google Sheets", icon: "📊" },
-  { name: "Google Drive",  icon: "💾" },
-  { name: "Gmail",         icon: "📧" },
-  { name: "Google Cal",    icon: "📅" },
-  { name: "Slack",         icon: "💬" },
-  { name: "GitHub",        icon: "🐙" },
-  { name: "Jira",          icon: "🎯" },
-  { name: "Notion",        icon: "📝" },
-  { name: "Asana",         icon: "✅" },
-  { name: "Trello",        icon: "📋" },
-  { name: "HubSpot",       icon: "🔶" },
-  { name: "Salesforce",    icon: "☁️" },
-  { name: "Zendesk",       icon: "🎫" },
-  { name: "Linear",        icon: "🔷" },
-  { name: "Web Search",    icon: "🔍" },
-  { name: "VS Code",       icon: "💻" },
-];
-
-const ADMIN_PIN = "77777";
-
-// ===== STATE =====
-let currentUser = null;
-let appState = loadState();
-
-function loadState() {
-  try {
-    const s = sessionStorage.getItem('p24_hub');
-    if (s) return JSON.parse(s);
-  } catch(e) {}
-  // Initial state
-  return {
-    agreements: {},       // { name: timestamp }
-    logins: {},           // { name: count }
-    lastSeen: {},         // { name: ISO }
-    connectors: {},       // { name: { connector: bool } }
-    updates: [
-      {
-        id: 1,
-        title: "Welcome to the Powder24 Claude Hub!",
-        body: "This is your home for everything Claude at Powder24. Start by signing the usage agreement, then explore the connectors tracker and Anthropic Academy. More updates coming soon from Tom and Lou.",
-        tag: "Important",
-        date: "2 Apr 2026",
-        author: "Tom"
-      },
-      {
-        id: 2,
-        title: "Claude now supports Projects — try it today",
-        body: "Claude's Projects feature lets you create a persistent workspace with its own instructions and uploaded files. Great for ongoing work like writing in a consistent tone or analysing regular reports. Ask Tom or Lou for a demo.",
-        tag: "New Feature",
-        date: "2 Apr 2026",
-        author: "Lou"
-      },
-      {
-        id: 3,
-        title: "Recommended: Claude 101 on Anthropic Academy",
-        body: "If you're newer to Claude, the 'Claude 101' course on the Academy tab is a brilliant place to start. It covers the basics of prompting, how Claude thinks, and how to get the most out of it. Takes about 30 minutes.",
-        tag: "Course",
-        date: "2 Apr 2026",
-        author: "Lou"
-      }
-    ]
-  };
-}
-
-function saveState() {
-  try { sessionStorage.setItem('p24_hub', JSON.stringify(appState)); } catch(e) {}
-}
-
-// ===== INIT LOGIN SCREEN =====
-function initLogin() {
-  const grid = document.getElementById('teamGrid');
-  grid.innerHTML = '';
-  TEAM.forEach(member => {
-    const btn = document.createElement('div');
-    btn.className = 'team-btn';
-    btn.innerHTML = `
-      <div class="avatar">${member.name.charAt(0)}</div>
-      <div class="name">${member.name}</div>
-      ${member.admin ? '<div class="role-tag">Admin</div>' : ''}
-    `;
-    btn.onclick = () => handleLogin(member);
-    grid.appendChild(btn);
-  });
-}
-
-// ===== PIN MODAL =====
-let pinBuffer = '';
-let pinTarget = null;
-
-function handleLogin(member) {
-  if (member.admin) {
-    pinTarget = member;
-    openPinModal(member.name);
-  } else {
-    completeLogin(member, false);
-  }
-}
-
-function openPinModal(name) {
-  pinBuffer = '';
-  updatePinDisplay();
-  document.getElementById('pinModalDesc').textContent = `Hey ${name} — enter your 5-digit PIN`;
-  document.getElementById('pinError').textContent = '';
-  document.getElementById('pinModal').classList.add('active');
-}
-
-function closePinModal() {
-  document.getElementById('pinModal').classList.remove('active');
-  if (pinTarget) {
-    completeLogin(pinTarget, false); // log in without admin
-  }
-}
-
-function pinPress(val) {
-  if (val === 'back') {
-    pinBuffer = pinBuffer.slice(0, -1);
-  } else if (val === 'clear') {
-    pinBuffer = '';
-  } else if (pinBuffer.length < 5) {
-    pinBuffer += val;
-  }
-  updatePinDisplay();
-  document.getElementById('pinError').textContent = '';
-
-  if (pinBuffer.length === 5) {
-    setTimeout(() => {
-      if (pinBuffer === ADMIN_PIN) {
-        document.getElementById('pinModal').classList.remove('active');
-        completeLogin(pinTarget, true);
-      } else {
-        document.getElementById('pinError').textContent = 'Incorrect PIN. Try again.';
-        pinBuffer = '';
-        updatePinDisplay();
-      }
-    }, 200);
-  }
-}
-
-function updatePinDisplay() {
-  for (let i = 0; i < 5; i++) {
-    const dot = document.getElementById('d' + i);
-    dot.classList.toggle('filled', i < pinBuffer.length);
-  }
-}
-
-// ===== COMPLETE LOGIN =====
-function completeLogin(member, isAdmin) {
-  currentUser = { ...member, isAdmin };
-
-  // Record login
-  appState.logins[member.name] = (appState.logins[member.name] || 0) + 1;
-  appState.lastSeen[member.name] = new Date().toISOString();
-  saveState();
-
-  // Update nav
-  document.getElementById('navAvatar').textContent = member.name.charAt(0);
-  document.getElementById('navName').textContent = member.name;
-
-  // Show/hide admin tab
-  document.getElementById('adminTabBtn').style.display = isAdmin ? 'flex' : 'none';
-
-  // Switch screens
-  document.getElementById('screen-login').classList.remove('active');
-  document.getElementById('screen-app').classList.add('active');
-
-  // Render tabs
-  renderUpdates();
-  renderConnectors();
-  renderAgreementTab();
-  if (isAdmin) renderAdmin();
-
-  // Session footer
-  document.getElementById('sessionInfo').textContent = `Logged in as ${member.name} · ${new Date().toLocaleTimeString()}`;
-
-  showToast(`Welcome back, ${member.name}! 👋`);
-}
-
-// ===== LOGOUT =====
-function logout() {
-  currentUser = null;
-  document.getElementById('screen-app').classList.remove('active');
-  document.getElementById('screen-login').classList.add('active');
-  switchTab('welcome', document.querySelector('.tab-btn'));
-}
-
-// ===== TAB SWITCHING =====
-function switchTab(tabId, btn) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + tabId).classList.add('active');
-  if (btn) btn.classList.add('active');
-  if (tabId === 'admin') renderAdmin();
-}
-
-// ===== AGREEMENT =====
-function renderAgreementTab() {
-  const signed = appState.agreements[currentUser.name];
-  const badge = document.getElementById('signedBadge');
-  const check = document.getElementById('agreeCheck');
-  const btn = document.getElementById('signBtn');
-  const box = document.getElementById('agreeBox');
-  if (signed) {
-    badge.classList.add('visible');
-    badge.innerHTML = `✅ Signed by <strong>${currentUser.name}</strong> on ${new Date(signed).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' })}`;
-    check.style.display = 'none';
-    btn.style.display = 'none';
-  } else {
-    badge.classList.remove('visible');
-    check.style.display = 'flex';
-    btn.style.display = 'inline-flex';
-    box.checked = false;
-    btn.disabled = true;
-  }
-}
-
-function toggleSignBtn() {
-  document.getElementById('signBtn').disabled = !document.getElementById('agreeBox').checked;
-}
-
-function signAgreement() {
-  appState.agreements[currentUser.name] = new Date().toISOString();
-  saveState();
-  renderAgreementTab();
-  showToast('Agreement signed — thank you! ✅');
-}
-
-// ===== UPDATES =====
-function renderUpdates() {
-  const grid = document.getElementById('updatesGrid');
-  const adminForm = document.getElementById('adminUpdateForm');
-  adminForm.style.display = currentUser.isAdmin ? 'block' : 'none';
-
-  if (appState.updates.length === 0) {
-    grid.innerHTML = '<p style="color:var(--white40); font-size:14px; text-align:center; padding:40px">No updates yet — check back soon.</p>';
-    return;
-  }
-
-  grid.innerHTML = appState.updates.slice().reverse().map(u => `
-    <div class="update-card">
-      <div class="update-meta">
-        <span class="update-tag">${u.tag}</span>
-        <span class="update-date">${u.date} · ${u.author}</span>
-      </div>
-      <h3>${u.title}</h3>
-      <p>${u.body}</p>
-    </div>
-  `).join('');
-}
-
-function addUpdate() {
-  const title = document.getElementById('newUpdateTitle').value.trim();
-  const body  = document.getElementById('newUpdateBody').value.trim();
-  const tag   = document.getElementById('newUpdateTag').value;
-  if (!title || !body) { showToast('Please fill in both fields.'); return; }
-
-  appState.updates.push({
-    id: Date.now(),
-    title, body, tag,
-    date: new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }),
-    author: currentUser.name
-  });
-  saveState();
-  document.getElementById('newUpdateTitle').value = '';
-  document.getElementById('newUpdateBody').value = '';
-  renderUpdates();
-  showToast('Update posted! 📰');
-}
-
-// ===== CONNECTORS =====
-function renderConnectors() {
-  const table = document.getElementById('connectorsTable');
-
-  // Header
-  let thead = '<thead><tr><th>Name</th>';
-  CONNECTORS.forEach(c => {
-    thead += `<th><span class="connector-icon">${c.icon}</span>${c.name}</th>`;
-  });
-  thead += '</tr></thead>';
-
-  // Rows
-  let tbody = '<tbody>';
-  TEAM.forEach(member => {
-    const isMe = member.name === currentUser.name;
-    const rowClass = isMe ? 'my-row' : '';
-    tbody += `<tr class="${rowClass}"><td>${member.name}${isMe ? ' ✦' : ''}</td>`;
-    CONNECTORS.forEach(c => {
-      const key = `${member.name}::${c.name}`;
-      const checked = (appState.connectors[member.name] || {})[c.name] || false;
-      tbody += `<td><input type="checkbox" class="conn-check"
-        ${checked ? 'checked' : ''}
-        ${isMe ? '' : 'disabled'}
-        onchange="toggleConnector('${member.name}','${c.name}',this.checked)"
-      ></td>`;
-    });
-    tbody += '</tr>';
-  });
-  tbody += '</tbody>';
-
-  table.innerHTML = thead + tbody;
-}
-
-function toggleConnector(personName, connectorName, val) {
-  if (!appState.connectors[personName]) appState.connectors[personName] = {};
-  appState.connectors[personName][connectorName] = val;
-  saveState();
-  showToast(val ? `${connectorName} added! 🔌` : `${connectorName} removed`);
-}
-
-// ===== ADMIN =====
-function renderAdmin() {
-  const totalLogins = Object.values(appState.logins).reduce((a,b) => a+b, 0);
-  const signedCount = Object.keys(appState.agreements).length;
-  const connectorTicks = Object.values(appState.connectors).reduce((sum, obj) => sum + Object.values(obj).filter(Boolean).length, 0);
-
-  // Stat cards
-  document.getElementById('adminStatCards').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-val">${TEAM.length}</div>
-      <div class="stat-label">Team Members</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val">${totalLogins}</div>
-      <div class="stat-label">Total Logins</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val">${signedCount}</div>
-      <div class="stat-label">Agreements Signed</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val">${TEAM.length - signedCount}</div>
-      <div class="stat-label">Yet to Sign</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val">${connectorTicks}</div>
-      <div class="stat-label">Connector Uses Logged</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-val">${appState.updates.length}</div>
-      <div class="stat-label">Updates Posted</div>
-    </div>
-  `;
-
-  // Agreement table
-  let aHtml = '<thead><tr><th>Name</th><th>Signed</th><th>Date</th></tr></thead><tbody>';
-  TEAM.forEach(m => {
-    const sig = appState.agreements[m.name];
-    aHtml += `<tr>
-      <td>${m.name}</td>
-      <td><span class="status-pill ${sig ? 'status-yes':'status-no'}">${sig ? 'Signed' : 'Pending'}</span></td>
-      <td style="color:var(--white40); font-size:12px">${sig ? new Date(sig).toLocaleDateString('en-GB') : '—'}</td>
-    </tr>`;
-  });
-  aHtml += '</tbody>';
-  document.getElementById('agreementTable').innerHTML = aHtml;
-
-  // Login table
-  let lHtml = '<thead><tr><th>Name</th><th>Logins</th><th>Last Seen</th><th>Activity</th></tr></thead><tbody>';
-  const sortedTeam = [...TEAM].sort((a,b) => (appState.logins[b.name]||0) - (appState.logins[a.name]||0));
-  const maxLogins = Math.max(...TEAM.map(m => appState.logins[m.name]||0), 1);
-  sortedTeam.forEach(m => {
-    const logins = appState.logins[m.name] || 0;
-    const last = appState.lastSeen[m.name] ? new Date(appState.lastSeen[m.name]).toLocaleDateString('en-GB') : 'Never';
-    const pct = Math.round((logins / maxLogins) * 100);
-    lHtml += `<tr>
-      <td>${m.name}</td>
-      <td style="font-weight:700">${logins}</td>
-      <td style="color:var(--white40); font-size:12px">${last}</td>
-      <td><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div></td>
-    </tr>`;
-  });
-  lHtml += '</tbody>';
-  document.getElementById('loginTable').innerHTML = lHtml;
-
-  // Connector adoption table
-  let cHtml = '<thead><tr><th>Connector</th><th>Users</th><th>Adoption</th></tr></thead><tbody>';
-  CONNECTORS.forEach(c => {
-    const users = TEAM.filter(m => (appState.connectors[m.name] || {})[c.name]).length;
-    const pct = Math.round((users / TEAM.length) * 100);
-    cHtml += `<tr>
-      <td>${c.icon} ${c.name}</td>
-      <td style="font-weight:700">${users} / ${TEAM.length}</td>
-      <td>
-        <div style="display:flex; align-items:center; gap:10px">
-          <div class="bar-wrap" style="width:120px"><div class="bar-fill" style="width:${pct}%"></div></div>
-          <span style="font-size:12px; color:var(--white40)">${pct}%</span>
-        </div>
-      </td>
-    </tr>`;
-  });
-  cHtml += '</tbody>';
-  document.getElementById('connectorAdoptionTable').innerHTML = cHtml;
-}
-
-// ===== TOAST =====
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// ===== BOOT =====
-initLogin();
-
-</script>
+<script src="data.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
