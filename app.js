@@ -27,12 +27,20 @@ function renderLoginGrid() {
     <div class="team-btn" onclick="handleLogin('${member.name}')">
       <div class="avatar">${member.name.charAt(0)}</div>
       <div class="name">${member.name}</div>
-      ${member.admin ? '<div class="role-tag">Admin</div>' : ''}
     </div>
-  `).join('');
+  `).join('') + `
+    <div class="team-btn guest-btn" onclick="handleLogin('Guest')">
+      <div class="avatar" style="background:var(--white40)">👤</div>
+      <div class="name">Guest</div>
+    </div>
+  `;
 }
 
 function handleLogin(name) {
+  if (name === 'Guest') {
+    completeLogin({ name: 'Guest', admin: false }, false);
+    return;
+  }
   const member = TEAM.find(m => m.name === name);
   if (!member) return;
   if (member.admin) {
@@ -164,7 +172,8 @@ function renderAgreementTab() {
 
   if (signed) {
     const date = DB.getSignedDateLocally(currentUser.name);
-    badge.innerHTML = `✅ Signed by <strong>${currentUser.name}</strong> on ${new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+    const formatted = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    badge.innerHTML = `✅ Signed by <strong>${currentUser.name}</strong> — <span style="color:var(--pink);font-weight:600">${formatted}</span>`;
     badge.classList.add('visible');
     check.style.display = 'none';
     btn.style.display   = 'none';
@@ -312,37 +321,31 @@ async function renderAdmin() {
     </div>
   `).join('');
 
-  // --- Agreement table ---
-  let aHtml = '<thead><tr><th>Name</th><th>Status</th><th>Date Signed</th></tr></thead><tbody>';
-  TEAM.forEach(m => {
-    const sig = agreements[m.name];
-    aHtml += `<tr>
-      <td>${m.name}</td>
-      <td><span class="status-pill ${sig ? 'status-yes' : 'status-no'}">${sig ? 'Signed' : 'Pending'}</span></td>
-      <td style="color:var(--white40);font-size:12px">${sig ? new Date(sig).toLocaleDateString('en-GB') : '—'}</td>
-    </tr>`;
-  });
-  aHtml += '</tbody>';
-  document.getElementById('agreementTable').innerHTML = aHtml;
+  // --- Merged team table (agreement + login activity) ---
+  // Merge localStorage agreements with Sheet agreements so signing is reflected immediately
+  const localAgreements = DB.getLocalAgreements();
+  const mergedAgreements = { ...agreements, ...localAgreements };
 
-  // --- Login activity table ---
   const maxLogins = Math.max(...TEAM.map(m => logins[m.name] || 0), 1);
   const sorted = [...TEAM].sort((a, b) => (logins[b.name] || 0) - (logins[a.name] || 0));
 
-  let lHtml = '<thead><tr><th>Name</th><th>Logins</th><th>Last Seen</th><th>Activity</th></tr></thead><tbody>';
+  let tHtml = '<thead><tr><th>Name</th><th>Agreement</th><th>Date Signed</th><th>Logins</th><th>Last Seen</th><th>Activity</th></tr></thead><tbody>';
   sorted.forEach(m => {
+    const sig = mergedAgreements[m.name];
     const n   = logins[m.name] || 0;
     const ls  = lastSeen[m.name] ? new Date(lastSeen[m.name]).toLocaleDateString('en-GB') : 'Never';
     const pct = Math.round((n / maxLogins) * 100);
-    lHtml += `<tr>
+    tHtml += `<tr>
       <td>${m.name}</td>
+      <td><span class="status-pill ${sig ? 'status-yes' : 'status-no'}">${sig ? 'Signed' : 'Pending'}</span></td>
+      <td style="color:var(--pink);font-size:12px;font-weight:600">${sig ? new Date(sig).toLocaleDateString('en-GB') : '—'}</td>
       <td style="font-weight:700">${n}</td>
       <td style="color:var(--white40);font-size:12px">${ls}</td>
       <td><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div></td>
     </tr>`;
   });
-  lHtml += '</tbody>';
-  document.getElementById('loginTable').innerHTML = lHtml;
+  tHtml += '</tbody>';
+  document.getElementById('teamTable').innerHTML = tHtml;
 
   // --- Connector adoption table ---
   let cHtml = '<thead><tr><th>Connector</th><th>Users</th><th>Adoption</th></tr></thead><tbody>';

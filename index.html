@@ -73,7 +73,7 @@
   <!-- Tab Bar -->
   <div class="tab-bar" id="tabBar">
     <button class="tab-btn active" onclick="switchTab('welcome', this)">🏔️ Home</button>
-    <button class="tab-btn" onclick="switchTab('agreement', this)">✍️ Agreement</button>
+    <button class="tab-btn" onclick="switchTab('agreement', this)">📖 Claude Basics</button>
     <button class="tab-btn" onclick="switchTab('updates', this)">📰 Updates</button>
     <button class="tab-btn" onclick="switchTab('connectors', this)">🔌 Connectors</button>
     <button class="tab-btn" onclick="switchTab('learn', this)">🎓 Learn</button>
@@ -120,57 +120,77 @@
     </div>
   </div>
 
-  <!-- == AGREEMENT TAB == -->
+  <!-- == CLAUDE BASICS TAB == -->
   <div class="tab-content" id="tab-agreement">
     <div class="tab-page">
       <div class="page-header">
-        <h2>AI Usage Agreement</h2>
+        <h2>Claude in a Nutshell</h2>
         <div class="grad-line"></div>
-        <p>Please read the following policy carefully before signing. Your signature confirms you understand how we use Claude at Powder24.</p>
+        <p>A structured overview of how Claude is set up, which products and models to use and when, and where to build your knowledge further. Read through and sign at the bottom.</p>
       </div>
       <div class="agreement-doc">
-        <h3>Powder24 — Claude AI Usage Policy</h3>
-        <h4>1. Purpose</h4>
-        <p>Powder24 has provided access to Claude, an AI assistant developed by Anthropic, to help team members work more effectively. This policy exists to ensure we use Claude responsibly, professionally, and in a way that protects both the company and our people.</p>
-        <h4>2. Appropriate Use</h4>
+
+        <h3>Think of Claude as an intelligence with 3 platforms, 3 products and 3 models</h3>
+        <p>The more you collaborate and test, the more it makes sense and the better Claude can assist you.</p>
+
+        <h4>Claude is available on 3 platforms</h4>
         <ul>
-          <li>Claude may be used to assist with writing, research, planning, summarising, brainstorming, and other work-related tasks.</li>
-          <li>Always apply your own professional judgement to any output Claude produces — treat it as a helpful starting point, not a final answer.</li>
-          <li>Claude can make mistakes. Verify important facts, figures, and advice before acting on them.</li>
+          <li><strong>Web (Claude.ai)</strong> — "boxed off", it can only see files that have been uploaded.</li>
+          <li><strong>Desktop</strong> — meaningfully more capable. The Cowork product only works on desktop.</li>
+          <li><strong>Mobile</strong> — not great for building projects or complex tasks, but great for quick questions and consuming information. Has a native voice mode so you can speak to it and get spoken replies.</li>
         </ul>
-        <h4>3. Confidentiality</h4>
+        <p class="policy-date">Summary: use Desktop for everyday work, Mobile for quick questions when away from your desk.</p>
+
+        <h4>Claude has 3 main products</h4>
         <ul>
-          <li>Do not input sensitive personal data (customer details, payment information, private employee records) into Claude.</li>
-          <li>Treat conversations with Claude as you would an external tool — be mindful of what you share.</li>
-          <li>Do not share your Claude login credentials with anyone else.</li>
+          <li><strong>Claude Chat</strong> — an LLM like ChatGPT. You prompt it, it responds. Great for brainstorming ideas and augmenting human thinking.</li>
+          <li><strong>Claude Cowork</strong> — for non-technical people who want agentic automation, or more complex projects pulling from multiple sources. Only available in the Desktop app. Think of Cowork as conversation shifting to delegation.</li>
+          <li><strong>Claude Code</strong> — for developers. An AI coding assistant that delegates technical execution.</li>
         </ul>
-        <h4>4. Professional Standards</h4>
+        <p class="policy-date">Summary: use Chat for everyday tasks, Cowork for more complex projects. Please read the "Use Cowork safely" articles and ensure <em>Allow all browser actions</em> is disabled (Settings → Desktop App → General).</p>
+
+        <h4>Claude has 3 models</h4>
         <ul>
-          <li>Claude should not be used to produce content that is harmful, misleading, discriminatory, or that could bring Powder24 into disrepute.</li>
-          <li>Do not use Claude to impersonate colleagues, clients, or partners.</li>
-          <li>Any content produced with the help of AI and shared externally should be reviewed and approved as you would any other company communication.</li>
+          <li><strong>Opus</strong> — for complex tasks.</li>
+          <li><strong>Sonnet</strong> — for everyday use. This should be your default.</li>
+          <li><strong>Haiku</strong> — the quickest and lightest.</li>
         </ul>
-        <h4>5. Copyright & Intellectual Property</h4>
+        <p>You select the model in the chat field via a simple dropdown.</p>
+
+        <h4>Additional functions</h4>
         <ul>
-          <li>Be aware that AI-generated content may not always be fully original. Do not pass off AI-generated content as entirely your own original work in contexts where that would be misleading.</li>
-          <li>Do not use Claude to reproduce large portions of copyrighted material.</li>
+          <li><strong>Extended Thinking</strong> — on the same dropdown. Good for complex planning. Keep off by default and switch on when needed. Shows you how Claude reached a conclusion (Citations).</li>
+          <li><strong>Research Mode</strong> — toggled by the + symbol in the chat field. Allows Claude to scan multi-angle sources. Increases output time and usage. Best used with Extended Thinking on.</li>
         </ul>
-        <h4>6. Accountability</h4>
+
+        <h4>Tutorials and Academy certification</h4>
+        <p>We'd like all Claude users at Powder24 to complete these two courses:</p>
         <ul>
-          <li>You are responsible for how you use Claude. The company retains the right to review usage in line with our standard IT policies.</li>
-          <li>If you're ever unsure whether a particular use is appropriate, check with Tom or Lou before proceeding.</li>
+          <li><strong>Claude 101</strong> — foundational knowledge. We recommend watching the "Getting Started with Claude AI" tutorial (5 mins) first. The course takes ~3.5 hours.</li>
+          <li><strong>Introduction to Claude Cowork</strong> — covers more specific use cases and plug-ins. Do this once Claude 101 feels comfortable. ~2 hours.</li>
         </ul>
-        <h4>7. Updates</h4>
-        <p>This policy may be updated as AI tools and best practices evolve. You'll be notified of any significant changes via this platform.</p>
-        <p class="policy-date">Last updated: April 2026 — Powder24 AI Team</p>
+        <p>Once completed, you receive a certificate on your account. Bookmark both courses to refer back to. The Anthropic Academy also has department-specific tutorials — see "Ways to use Claude" for examples like Claude for Marketing or Claude for Product Management. The AI Fluency Framework course is also a useful recap on efficiency, ethics, and risk awareness.</p>
+
+        <h4>Projects vs Chats</h4>
+        <ul>
+          <li><strong>Chats</strong> — standalone conversations. Each starts fresh with no memory of previous sessions. Great for one-off tasks and quick questions.</li>
+          <li><strong>Projects</strong> — give Claude persistent context across multiple conversations. Store background information Claude will refer back to every time. Use a Project for anything recurring or where context matters.</li>
+        </ul>
+        <p>Chats can be linked into Projects or created within them.</p>
+
+        <h4>Connectors</h4>
+        <p>Connectors allow Claude to link directly to external tools you already use — Google Drive, Slack, Notion, calendars, and more. Once connected, Claude can read from and in some cases interact with those tools.</p>
+        <p>For now, we are doing an audit of which connectors people have used — please complete the Connectors tab with any you have used so far. Please avoid connecting any new connectors until we have completed the audit. As a general principle, only connect tools that hold data you'd be comfortable with Claude having visibility of, and be clear on the permissions when connecting.</p>
+
+        <p class="policy-date">Last updated: April 2026 — Tom & Lou, Powder24 AI Team</p>
       </div>
       <div class="agreement-footer">
         <div class="signed-badge" id="signedBadge"></div>
         <label class="agree-check" id="agreeCheck">
           <input type="checkbox" id="agreeBox" onchange="toggleSignBtn()">
-          <span>I confirm that I have read and understood the Powder24 Claude AI Usage Policy, and I agree to abide by its terms.</span>
+          <span>I have read and understood everything above.</span>
         </label>
-        <button class="btn-primary" id="signBtn" onclick="signAgreement()" disabled>Sign Agreement ✍️</button>
+        <button class="btn-primary" id="signBtn" onclick="signAgreement()" disabled>Confirm ✍️</button>
       </div>
     </div>
   </div>
@@ -340,15 +360,9 @@
         <div class="loading-state">Loading stats...</div>
       </div>
       <div class="admin-section">
-        <h3>✍️ Agreement Sign-off Status</h3>
+        <h3>👥 Team Activity</h3>
         <div class="table-wrap">
-          <table class="admin-table" id="agreementTable"></table>
-        </div>
-      </div>
-      <div class="admin-section">
-        <h3>🔐 Login Activity</h3>
-        <div class="table-wrap">
-          <table class="admin-table" id="loginTable"></table>
+          <table class="admin-table" id="teamTable"></table>
         </div>
       </div>
       <div class="admin-section">
