@@ -43,12 +43,8 @@ function handleLogin(name) {
   }
   const member = TEAM.find(m => m.name === name);
   if (!member) return;
-  if (member.admin) {
-    pinTarget = member;
-    openPinModal(member.name);
-  } else {
-    completeLogin(member, false);
-  }
+  pinTarget = member;
+  openPinModal(member.name);
 }
 
 /* ============================================================
@@ -68,7 +64,9 @@ function openPinModal(name) {
 
 function closePinModal() {
   document.getElementById('pinModal').classList.remove('active');
-  if (pinTarget) completeLogin(pinTarget, false);
+  pinTarget = null;
+  pinBuffer = '';
+  updatePinDisplay();
 }
 
 function pinPress(val) {
@@ -84,9 +82,9 @@ function pinPress(val) {
 
   if (pinBuffer.length === 5) {
     setTimeout(() => {
-      if (pinBuffer === ADMIN_PIN) {
+      if (pinBuffer === pinTarget.pin) {
         document.getElementById('pinModal').classList.remove('active');
-        completeLogin(pinTarget, true);
+        completeLogin(pinTarget, pinTarget.admin);
       } else {
         document.getElementById('pinError').textContent = 'Incorrect PIN. Try again.';
         pinBuffer = '';
