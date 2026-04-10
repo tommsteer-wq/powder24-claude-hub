@@ -11,7 +11,6 @@ let currentUser = null;
 
 function init() {
   renderLoginGrid();
-  // Show connection status
   if (!DB.isConnected()) {
     console.info('[Hub] Running in local mode — connect Google Sheet to enable live data sync.');
   }
@@ -125,10 +124,10 @@ async function completeLogin(member, isAdmin) {
   document.getElementById('sessionInfo').textContent =
     `${member.name} · ${new Date().toLocaleTimeString()} · ${DB.isConnected() ? '🟢 Live' : '🟡 Local mode'}`;
 
-  // Render all tabs
-  await renderUpdates();
+  // Render tabs
   await renderConnectors();
   renderAgreementTab();
+  renderChecklistTab();
 
   showToast(`Welcome back, ${member.name}! 👋`);
 }
@@ -141,7 +140,6 @@ function logout() {
   currentUser = null;
   document.getElementById('screen-app').classList.remove('active');
   document.getElementById('screen-login').classList.add('active');
-  // Reset to home tab
   switchTab('welcome', document.querySelector('.tab-btn'));
 }
 
@@ -158,7 +156,7 @@ function switchTab(tabId, btn) {
 }
 
 /* ============================================================
-   AGREEMENT TAB
+   AGREEMENT TAB (Claude Basics)
    ============================================================ */
 
 function renderAgreementTab() {
@@ -198,46 +196,43 @@ async function signAgreement() {
 }
 
 /* ============================================================
-   UPDATES TAB
+   DATA UPLOAD CHECKLIST TAB
    ============================================================ */
 
-async function renderUpdates() {
-  const grid = document.getElementById('updatesGrid');
-  const adminForm = document.getElementById('adminUpdateForm');
+function renderChecklistTab() {
+  const signed = DB.isChecklistSignedLocally(currentUser.name);
+  const badge  = document.getElementById('checklistSignedBadge');
+  const check  = document.getElementById('checklistAgreeCheck');
+  const btn    = document.getElementById('checklistSignBtn');
+  const box    = document.getElementById('checklistAgreeBox');
 
-  adminForm.style.display = currentUser.isAdmin ? 'block' : 'none';
-  grid.innerHTML = '<div class="loading-state">Loading updates...</div>';
-
-  const updates = await DB.getUpdates();
-
-  if (!updates || updates.length === 0) {
-    grid.innerHTML = '<div class="loading-state">No updates yet — check back soon.</div>';
-    return;
+  if (signed) {
+    const date = DB.getChecklistSignedDateLocally(currentUser.name);
+    const formatted = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    badge.innerHTML = `✅ Acknowledged by <strong>${currentUser.name}</strong> — <span style="color:var(--pink);font-weight:600">${formatted}</span>`;
+    badge.classList.add('visible');
+    check.style.display = 'none';
+    btn.style.display   = 'none';
+  } else {
+    badge.classList.remove('visible');
+    check.style.display = 'flex';
+    btn.style.display   = 'inline-flex';
+    box.checked  = false;
+    btn.disabled = true;
   }
-
-  grid.innerHTML = [...updates].reverse().map(u => `
-    <div class="update-card">
-      <div class="update-meta">
-        <span class="update-tag">${u.tag}</span>
-        <span class="update-date">${u.date} · ${u.author}</span>
-      </div>
-      <h3>${u.title}</h3>
-      <p>${u.body}</p>
-    </div>
-  `).join('');
 }
 
-async function addUpdate() {
-  const title  = document.getElementById('newUpdateTitle').value.trim();
-  const body   = document.getElementById('newUpdateBody').value.trim();
-  const tag    = document.getElementById('newUpdateTag').value;
-  if (!title || !body) { showToast('Please fill in both title and summary.'); return; }
+function toggleChecklistBtn() {
+  document.getElementById('checklistSignBtn').disabled = !document.getElementById('checklistAgreeBox').checked;
+}
 
-  await DB.addUpdate(title, body, tag, currentUser.name);
-  document.getElementById('newUpdateTitle').value = '';
-  document.getElementById('newUpdateBody').value  = '';
-  await renderUpdates();
-  showToast('Update posted! 📰');
+async function signChecklist() {
+  const btn = document.getElementById('checklistSignBtn');
+  btn.disabled = true;
+  btn.textContent = 'Signing...';
+  await DB.signChecklist(currentUser.name);
+  renderChecklistTab();
+  showToast('Checklist acknowledged — thank you! ✅');
 }
 
 /* ============================================================
@@ -250,14 +245,12 @@ async function renderConnectors() {
 
   const connectorData = await DB.getConnectors();
 
-  // Build header
   let thead = '<thead><tr><th>Name</th>';
   CONNECTORS.forEach(c => {
     thead += `<th><span class="connector-icon">${c.icon}</span>${c.name}</th>`;
   });
   thead += '</tr></thead>';
 
-  // Build rows
   let tbody = '<tbody>';
   TEAM.forEach(member => {
     const isMe    = member.name === currentUser.name;
@@ -291,27 +284,32 @@ async function handleConnectorChange(name, connector, value) {
    ============================================================ */
 
 async function renderAdmin() {
-  // Fetch all data
-  const [agreements, logins, connectorData] = await Promise.all([
+  const [agreements, logins, connectorData, checklistData] = await Promise.all([
     DB.getAgreements(),
     DB.getLogins(),
-    DB.getConnectors()
+    DB.getConnectors(),
+    DB.getChecklist()
   ]);
 
   const lastSeen = DB.getLocalLastSeen();
 
   // --- Stat cards ---
-  const totalLogins    = Object.values(logins).reduce((a, b) => a + b, 0);
-  const signedCount    = Object.keys(agreements).length;
-  const connectorTicks = Object.values(connectorData)
+  const totalLogins      = Object.values(logins).reduce((a, b) => a + b, 0);
+  const localAgreements  = DB.getLocalAgreements();
+  const mergedAgreements = { ...agreements, ...localAgreements };
+  const signedCount      = Object.keys(mergedAgreements).length;
+  const localChecklist   = DB.getLocalChecklist();
+  const mergedChecklist  = { ...checklistData, ...localChecklist };
+  const checklistCount   = Object.keys(mergedChecklist).length;
+  const connectorTicks   = Object.values(connectorData)
     .reduce((sum, obj) => sum + Object.values(obj).filter(Boolean).length, 0);
 
   document.getElementById('adminStatCards').innerHTML = [
-    { val: TEAM.length,              label: 'Team Members' },
-    { val: totalLogins,              label: 'Total Logins' },
-    { val: signedCount,              label: 'Agreements Signed' },
-    { val: TEAM.length - signedCount,label: 'Yet to Sign' },
-    { val: connectorTicks,           label: 'Connectors Logged' },
+    { val: TEAM.length,                label: 'Team Members' },
+    { val: totalLogins,                label: 'Total Logins' },
+    { val: signedCount,                label: 'Basics Signed' },
+    { val: checklistCount,             label: 'Checklist Signed' },
+    { val: connectorTicks,             label: 'Connectors Logged' },
   ].map(s => `
     <div class="stat-card">
       <div class="stat-val">${s.val}</div>
@@ -319,24 +317,21 @@ async function renderAdmin() {
     </div>
   `).join('');
 
-  // --- Merged team table (agreement + login activity) ---
-  // Merge localStorage agreements with Sheet agreements so signing is reflected immediately
-  const localAgreements = DB.getLocalAgreements();
-  const mergedAgreements = { ...agreements, ...localAgreements };
-
+  // --- Merged team table ---
   const maxLogins = Math.max(...TEAM.map(m => logins[m.name] || 0), 1);
   const sorted = [...TEAM].sort((a, b) => (logins[b.name] || 0) - (logins[a.name] || 0));
 
-  let tHtml = '<thead><tr><th>Name</th><th>Agreement</th><th>Date Signed</th><th>Logins</th><th>Last Seen</th><th>Activity</th></tr></thead><tbody>';
+  let tHtml = '<thead><tr><th>Name</th><th>Basics</th><th>Checklist</th><th>Logins</th><th>Last Seen</th><th>Activity</th></tr></thead><tbody>';
   sorted.forEach(m => {
     const sig = mergedAgreements[m.name];
+    const cl  = mergedChecklist[m.name];
     const n   = logins[m.name] || 0;
     const ls  = lastSeen[m.name] ? new Date(lastSeen[m.name]).toLocaleDateString('en-GB') : 'Never';
     const pct = Math.round((n / maxLogins) * 100);
     tHtml += `<tr>
       <td>${m.name}</td>
       <td><span class="status-pill ${sig ? 'status-yes' : 'status-no'}">${sig ? 'Signed' : 'Pending'}</span></td>
-      <td style="color:var(--pink);font-size:12px;font-weight:600">${sig ? new Date(sig).toLocaleDateString('en-GB') : '—'}</td>
+      <td><span class="status-pill ${cl ? 'status-yes' : 'status-no'}">${cl ? 'Signed' : 'Pending'}</span></td>
       <td style="font-weight:700">${n}</td>
       <td style="color:var(--white40);font-size:12px">${ls}</td>
       <td><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div></td>

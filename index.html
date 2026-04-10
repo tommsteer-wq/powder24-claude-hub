@@ -48,7 +48,7 @@
       <button class="pin-key" onclick="pinPress('clear')" style="font-size:12px;color:var(--white40)">CLR</button>
     </div>
     <div class="pin-error" id="pinError"></div>
-    <button class="btn-ghost" onclick="closePinModal()">Cancel — log in without admin</button>
+    <button class="btn-ghost" onclick="closePinModal()">Cancel</button>
   </div>
 </div>
 
@@ -74,7 +74,7 @@
   <div class="tab-bar" id="tabBar">
     <button class="tab-btn active" onclick="switchTab('welcome', this)">🏔️ Home</button>
     <button class="tab-btn" onclick="switchTab('agreement', this)">📖 Claude Basics</button>
-    <button class="tab-btn" onclick="switchTab('updates', this)">📰 Updates</button>
+    <button class="tab-btn" onclick="switchTab('checklist', this)">📋 Data Checklist</button>
     <button class="tab-btn" onclick="switchTab('connectors', this)">🔌 Connectors</button>
     <button class="tab-btn" onclick="switchTab('learn', this)">🎓 Learn</button>
     <button class="tab-btn admin-tab" id="adminTabBtn" onclick="switchTab('admin', this)" style="display:none">⚙️ Admin</button>
@@ -89,33 +89,35 @@
       </div>
     </div>
     <div class="tab-page">
-      <div class="welcome-cards">
-        <div class="wcard">
-          <div class="wcard-icon">✍️</div>
-          <h3>Sign the Agreement</h3>
-          <p>Read and acknowledge our AI usage policy — takes less than 2 minutes and helps keep everyone working safely.</p>
+      <div class="welcome-cards home-grid-2x2">
+        <div class="wcard clickable" onclick="switchTab('agreement', document.querySelectorAll('.tab-btn')[1])">
+          <div class="wcard-icon">📖</div>
+          <h3>Claude Basics</h3>
+          <p>Read through the essentials of how Claude works, which products and models to use, and sign to confirm you've understood.</p>
         </div>
-        <div class="wcard">
-          <div class="wcard-icon">📰</div>
-          <h3>Stay Up to Date</h3>
-          <p>Tom and Lou share the latest Claude news, updates, and tips so you always know what's new and useful.</p>
-        </div>
-        <div class="wcard">
+        <div class="wcard clickable" onclick="switchTab('connectors', document.querySelectorAll('.tab-btn')[3])">
           <div class="wcard-icon">🔌</div>
           <h3>Log Your Connectors</h3>
           <p>Tell us which Claude integrations you've tried — helps the team understand where AI is making a difference.</p>
         </div>
-        <div class="wcard">
+        <div class="wcard clickable" onclick="switchTab('checklist', document.querySelectorAll('.tab-btn')[2])">
+          <div class="wcard-icon">📋</div>
+          <h3>Data Upload Checklist</h3>
+          <p>Before uploading anything to Claude, run through this quick checklist to keep data safe and compliant.</p>
+        </div>
+        <div class="wcard clickable" onclick="switchTab('learn', document.querySelectorAll('.tab-btn')[4])">
           <div class="wcard-icon">🎓</div>
-          <h3>Keep Learning</h3>
-          <p>Access Anthropic's official Academy right here — courses, guides, and certifications to deepen your skills.</p>
+          <h3>Log Your Learning</h3>
+          <p>Access the compulsory courses and other resources to build your Claude skills and earn certificates.</p>
         </div>
       </div>
       <div class="welcome-message">
-        <h2>A message from Tom & Lou</h2>
-        <p>AI isn't something happening to us — it's something we're choosing to embrace, on our own terms, at our own pace. At Powder24, we believe that the teams who get comfortable with tools like Claude now will be the ones who are most effective, most creative, and most fulfilled in their work over the next few years.</p>
-        <p>Claude is already part of how many of us write, plan, research, and solve problems day-to-day. This hub is here to make sure everyone has the same access, the same information, and the same opportunity to benefit — whether you've been using it for months or you're just getting started.</p>
-        <p>There's no pressure and no wrong answers. Have a look around, sign the agreement when you're ready, and don't hesitate to come to Tom or Lou with questions, ideas, or anything you'd like us to cover here. We're building this together.</p>
+        <h2>A message from Powder24</h2>
+        <p>AI is moving fast and so are we. We are actively doing what we can to adopt and adapt — our approach will evolve as we learn more and as the tools themselves develop.</p>
+        <p>If you're unsure about anything, the right thing to do is ask rather than assume and we can work it through together.</p>
+        <p>We'd ask that everyone is adaptable and pragmatic — some of the guidance above may change as we learn more, and some of it may tighten further.</p>
+        <p>We're approaching this piece by piece, balancing risk and opportunity in equal measure while keeping up with the pace of the broader AI landscape.</p>
+        <p>Your patience and cooperation as we get this right is appreciated.</p>
       </div>
     </div>
   </div>
@@ -126,7 +128,7 @@
       <div class="page-header">
         <h2>Claude in a Nutshell</h2>
         <div class="grad-line"></div>
-        <p>A structured overview of how Claude is set up, which products and models to use and when, and where to build your knowledge further. Read through and sign at the bottom.</p>
+        <p>A structured overview of how Claude is set up, which products and models to use and when, and where to build your knowledge further. Items highlighted in <span class="governance-highlight">green</span> are governance points. Read through and sign at the bottom.</p>
       </div>
       <div class="agreement-doc">
 
@@ -139,15 +141,17 @@
           <li><strong>Desktop</strong> — meaningfully more capable. The Cowork product only works on desktop.</li>
           <li><strong>Mobile</strong> — not great for building projects or complex tasks, but great for quick questions and consuming information. Has a native voice mode so you can speak to it and get spoken replies.</li>
         </ul>
+        <p>All 3 sync to each other when logged into your account.</p>
         <p class="policy-date">Summary: use Desktop for everyday work, Mobile for quick questions when away from your desk.</p>
 
         <h4>Claude has 3 main products</h4>
         <ul>
           <li><strong>Claude Chat</strong> — an LLM like ChatGPT. You prompt it, it responds. Great for brainstorming ideas and augmenting human thinking.</li>
-          <li><strong>Claude Cowork</strong> — for non-technical people who want agentic automation, or more complex projects pulling from multiple sources. Only available in the Desktop app. Think of Cowork as conversation shifting to delegation.</li>
+          <li><strong>Claude Cowork</strong> — for non-technical people who want agentic automation (allowing repetitive and rule-bound tasks to be automated) or more complex projects pulling from multiple sources. It can also organise multiple files. Only available in the Desktop app and it can only see what is shared with it. Think of Cowork as conversation shifting to delegation.</li>
           <li><strong>Claude Code</strong> — for developers. An AI coding assistant that delegates technical execution.</li>
         </ul>
-        <p class="policy-date">Summary: use Chat for everyday tasks, Cowork for more complex projects. Please read the "Use Cowork safely" articles and ensure <em>Allow all browser actions</em> is disabled (Settings → Desktop App → General).</p>
+        <p class="policy-date">Summary: use Chat for everyday tasks, Cowork for more complex projects.</p>
+        <p class="governance-note">Please read the <a href="https://support.claude.com/en/articles/13364135-use-cowork-safely" target="_blank">"Use Cowork safely" articles here</a>.</p>
 
         <h4>Claude has 3 models</h4>
         <ul>
@@ -159,30 +163,37 @@
 
         <h4>Additional functions</h4>
         <ul>
-          <li><strong>Extended Thinking</strong> — on the same dropdown. Good for complex planning. Keep off by default and switch on when needed. Shows you how Claude reached a conclusion (Citations).</li>
-          <li><strong>Research Mode</strong> — toggled by the + symbol in the chat field. Allows Claude to scan multi-angle sources. Increases output time and usage. Best used with Extended Thinking on.</li>
+          <li><strong>Extended Thinking</strong> — on the same dropdown. Good for complex planning. Keep off by default and switch on when needed to manage usage. When on, it allows you visibility on how Claude reached a conclusion (called "Citations"), useful for complex tasks where verifying the output may be more complex.</li>
+          <li><strong>Research Mode</strong> — toggled by the + symbol in the chat field. Allows Claude to scan multi-angle sources. Increases output time and usage rates. When in Research Mode, Extended Thinking should also be turned on as the two work best together.</li>
         </ul>
 
         <h4>Tutorials and Academy certification</h4>
-        <p>We'd like all Claude users at Powder24 to complete these two courses:</p>
+        <p>We would like all Claude company users to do the following academy courses:</p>
         <ul>
-          <li><strong>Claude 101</strong> — foundational knowledge. We recommend watching the "Getting Started with Claude AI" tutorial (5 mins) first. The course takes ~3.5 hours.</li>
-          <li><strong>Introduction to Claude Cowork</strong> — covers more specific use cases and plug-ins. Do this once Claude 101 feels comfortable. ~2 hours.</li>
+          <li><strong><a href="https://anthropic.skilljar.com/claude-101" target="_blank">Claude 101</a></strong> — foundational knowledge. We recommend watching the <a href="https://claude.com/resources/tutorials/getting-started-with-claude-ai" target="_blank">Getting Started with Claude AI</a> tutorial (5 mins) before starting. The course takes around 3 hours.</li>
+          <li><strong><a href="https://anthropic.skilljar.com/introduction-to-claude-cowork" target="_blank">Introduction to Claude Cowork</a></strong> — covers more specific use cases and plug-ins. Do this once Claude 101 feels comfortable. Takes around 2 hours.</li>
         </ul>
-        <p>Once completed, you receive a certificate on your account. Bookmark both courses to refer back to. The Anthropic Academy also has department-specific tutorials — see "Ways to use Claude" for examples like Claude for Marketing or Claude for Product Management. The AI Fluency Framework course is also a useful recap on efficiency, ethics, and risk awareness.</p>
+        <p>We suggest bookmarking the above 2 courses to refer back to. The hope is that once you've completed these courses, you'll be able to review task lists and understand how Claude can streamline how objectives are achieved.</p>
+        <p>Once you have completed the courses, you receive a certificate on your account:</p>
+        <div class="cert-image-wrap">
+          <img src="cert-example.png" alt="Example certificate on Anthropic Academy profile" class="cert-image">
+        </div>
+        <p>The above guide should be read in parallel to Powder24's AI usage policy and parameters.</p>
+        <p>The Anthropic Academy is extensive. In addition to the above, you may find tutorials that focus on specific departments useful. See the section under <a href="https://www.anthropic.com/learn/claude-for-work" target="_blank">"Ways to use Claude" here</a> (for example, <a href="https://claude.com/resources/tutorials/claude-for-marketing" target="_blank">Claude for Marketing</a> / <a href="https://claude.com/resources/tutorials/claude-for-product-management" target="_blank">Claude for Product Management</a>).</p>
+        <p>The <a href="https://www.anthropic.com/learn/claude-for-you" target="_blank">AI Fluency Framework course</a> is also useful as a recap on how to best use AI platforms, both from an efficiency perspective and from an ethical and risk-aware level.</p>
 
         <h4>Projects vs Chats</h4>
         <ul>
-          <li><strong>Chats</strong> — standalone conversations. Each starts fresh with no memory of previous sessions. Great for one-off tasks and quick questions.</li>
-          <li><strong>Projects</strong> — give Claude persistent context across multiple conversations. Store background information Claude will refer back to every time. Use a Project for anything recurring or where context matters.</li>
+          <li><strong>Chats</strong> — standalone conversations. Each starts fresh with no memory of previous sessions. Great for one-off tasks, quick questions, or exploratory thinking.</li>
+          <li><strong>Projects</strong> — give Claude persistent context across multiple conversations, meaning you can store background information that Claude will refer back to every time you open that project. Use a Project for anything recurring or where context matters (and you don't want to keep repeating the context).</li>
         </ul>
         <p>Chats can be linked into Projects or created within them.</p>
 
         <h4>Connectors</h4>
-        <p>Connectors allow Claude to link directly to external tools you already use — Google Drive, Slack, Notion, calendars, and more. Once connected, Claude can read from and in some cases interact with those tools.</p>
-        <p>For now, we are doing an audit of which connectors people have used — please complete the Connectors tab with any you have used so far. Please avoid connecting any new connectors until we have completed the audit. As a general principle, only connect tools that hold data you'd be comfortable with Claude having visibility of, and be clear on the permissions when connecting.</p>
+        <p>Connectors allow Claude to link directly to external tools and platforms you already use — Google Drive, Slack, Notion, or calendars. Once connected, Claude can read from and in some cases interact with those tools.</p>
+        <p class="governance-note">For now, we are doing an audit of which connectors people have used before confirming what we are happy with. Please avoid connecting any more connectors until we have completed the audit or if you need something urgently, please ask LJ/TS. As a general principle, we should only connect tools that hold data you'd be comfortable with Claude having visibility of, and be clear on the set-up permissions when connecting the tool.</p>
 
-        <p class="policy-date">Last updated: April 2026 — Tom & Lou, Powder24 AI Team</p>
+        <p class="policy-date">Last updated: 10 April 2026 — Tom & Lou, Powder24 AI Team</p>
       </div>
       <div class="agreement-footer">
         <div class="signed-badge" id="signedBadge"></div>
@@ -195,40 +206,47 @@
     </div>
   </div>
 
-  <!-- == UPDATES TAB == -->
-  <div class="tab-content" id="tab-updates">
+  <!-- == DATA UPLOAD CHECKLIST TAB == -->
+  <div class="tab-content" id="tab-checklist">
     <div class="tab-page">
       <div class="page-header">
-        <h2>Latest Updates</h2>
+        <h2>Data Upload Checklist</h2>
         <div class="grad-line"></div>
-        <p>News, tips, and important information from Tom and Lou — check back regularly.</p>
+        <p>Before uploading anything to Claude, run through this checklist. This applies to any AI tool, but for the purpose of this communication, we are concentrating on Claude.</p>
       </div>
-      <div id="adminUpdateForm" style="display:none">
-        <div class="admin-form-card">
-          <h3>+ Post a New Update</h3>
-          <div class="form-row">
-            <label>Title</label>
-            <input type="text" id="newUpdateTitle" placeholder="e.g. Claude's new Projects feature is here">
-          </div>
-          <div class="form-row">
-            <label>Summary</label>
-            <textarea id="newUpdateBody" placeholder="Write a short summary of the update..."></textarea>
-          </div>
-          <div class="form-row">
-            <label>Tag</label>
-            <select id="newUpdateTag">
-              <option>New Feature</option>
-              <option>Tips & Tricks</option>
-              <option>Important</option>
-              <option>Course</option>
-              <option>News</option>
-            </select>
-          </div>
-          <button class="btn-primary" onclick="addUpdate()">Post Update</button>
+      <div class="agreement-doc">
+        <h3>Before uploading anything to Claude…</h3>
+        <p>Alongside the general company AI usage policy, please use this checklist before uploading any data or documents to Claude:</p>
+
+        <div class="checklist-item">
+          <div class="checklist-q">Does it contain customer personal data (names, emails, booking details, payment info)?</div>
+          <div class="checklist-a governance-note">If yes — do not upload without anonymising first.</div>
         </div>
+
+        <div class="checklist-item">
+          <div class="checklist-q">Does it contain commercially sensitive information (pricing strategy, supplier rates, margin data)?</div>
+          <div class="checklist-a governance-note">If yes — please check with TS.</div>
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-q">Could this information cause damage to the business or a customer if it were exposed?</div>
+          <div class="checklist-a governance-note">If yes — consider whether AI is the right tool for this task, and speak to LJ or TS if unsure.</div>
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-q">Does it contain employee personal data?</div>
+          <div class="checklist-a governance-note">If yes — do not upload.</div>
+        </div>
+
+        <p class="governance-note" style="margin-top:24px">If you're not sure whether something falls into the above categories, ask before uploading. The default position should be caution.</p>
       </div>
-      <div class="updates-grid" id="updatesGrid">
-        <div class="loading-state">Loading updates...</div>
+      <div class="agreement-footer">
+        <div class="signed-badge" id="checklistSignedBadge"></div>
+        <label class="agree-check" id="checklistAgreeCheck">
+          <input type="checkbox" id="checklistAgreeBox" onchange="toggleChecklistBtn()">
+          <span>I have read and understood the data upload checklist above.</span>
+        </label>
+        <button class="btn-primary" id="checklistSignBtn" onclick="signChecklist()" disabled>Confirm ✍️</button>
       </div>
     </div>
   </div>
@@ -255,90 +273,66 @@
       <div class="page-header">
         <h2>Learn</h2>
         <div class="grad-line"></div>
-        <p>Everything you need to get better at Claude — official courses, guides, and handpicked reads from Tom and Lou.</p>
+        <p>Complete the two compulsory courses below, then explore further resources at your own pace.</p>
       </div>
-      <div class="academy-hero">
-        <div class="academy-hero-text">
-          <h3>🎓 Anthropic Academy</h3>
-          <p>Anthropic's official learning platform with free courses, video guides, and certifications. The best place to start if you want to understand how Claude actually works and how to use it well.</p>
-          <div class="course-pills">
-            <span class="course-pill">Claude 101</span>
-            <span class="course-pill">AI Fluency</span>
-            <span class="course-pill">Prompt Engineering</span>
-            <span class="course-pill">Enterprise AI</span>
-            <span class="course-pill">Earn Certificates</span>
-          </div>
-          <a href="https://www.anthropic.com/learn" target="_blank" class="academy-cta">Open Anthropic Academy ↗</a>
-        </div>
-        <div class="academy-hero-badge">
-          <div class="badge-icon">🏅</div>
-          <p>Free courses with certificates on completion</p>
+
+      <div class="compulsory-courses">
+        <div class="compulsory-label">Compulsory courses</div>
+        <div class="compulsory-grid">
+          <a href="https://anthropic.skilljar.com/claude-101" target="_blank" class="compulsory-card">
+            <div class="compulsory-badge">🎓 Required</div>
+            <h3>Claude 101</h3>
+            <p>Foundational knowledge — covers what Claude is, its features, and how to use it well. We recommend watching the <a href="https://claude.com/resources/tutorials/getting-started-with-claude-ai" target="_blank" onclick="event.stopPropagation()">Getting Started tutorial</a> (5 mins) first.</p>
+            <div class="compulsory-meta">⏱ ~3 hours · Free · Certificate</div>
+            <div class="compulsory-cta">Start Course ↗</div>
+          </a>
+          <a href="https://anthropic.skilljar.com/introduction-to-claude-cowork" target="_blank" class="compulsory-card">
+            <div class="compulsory-badge">🎓 Required</div>
+            <h3>Introduction to Claude Cowork</h3>
+            <p>Take your usage up a notch — covers specific use cases, plug-ins, and agentic automation. Do this once Claude 101 feels comfortable.</p>
+            <div class="compulsory-meta">⏱ ~2 hours · Free · Certificate</div>
+            <div class="compulsory-cta">Start Course ↗</div>
+          </a>
         </div>
       </div>
 
-      <div class="resource-section-title">Start here — if you're new to Claude</div>
+      <div class="resource-section-title">More resources to explore</div>
       <div class="resource-grid">
-        <a href="https://www.anthropic.com/learn" target="_blank" class="resource-card featured">
-          <div class="rc-tag">Official Course</div>
-          <h4>Claude 101</h4>
-          <p>Anthropic's intro course. Covers the basics of how Claude thinks, how to prompt it well, and how to avoid common mistakes.</p>
-          <div class="rc-time">⏱ ~30 mins · Free · Certificate</div>
+        <a href="https://www.anthropic.com/learn/claude-for-work" target="_blank" class="resource-card">
+          <div class="rc-tag">Tutorials</div>
+          <h4>Ways to Use Claude</h4>
+          <p>Department-specific tutorials — marketing, product management, and more.</p>
+          <div class="rc-time">⏱ Various</div>
         </a>
-        <a href="https://support.claude.ai/hc/en-us/articles/22321469160083-What-is-Claude" target="_blank" class="resource-card">
-          <div class="rc-tag">Guide</div>
-          <h4>What is Claude?</h4>
-          <p>A plain-English overview of what Claude is, how it differs from a search engine, and what it can and can't do.</p>
-          <div class="rc-time">⏱ 5 min read</div>
+        <a href="https://www.anthropic.com/learn/claude-for-you" target="_blank" class="resource-card">
+          <div class="rc-tag">Course</div>
+          <h4>AI Fluency Framework</h4>
+          <p>A recap on how to best use AI — efficiency, ethics, and risk awareness.</p>
+          <div class="rc-time">⏱ Self-paced</div>
         </a>
-        <a href="https://www.anthropic.com/news/claude-character" target="_blank" class="resource-card">
-          <div class="rc-tag">Article</div>
-          <h4>Claude's Character</h4>
-          <p>Anthropic explains the values and personality behind Claude — helpful for understanding why it behaves the way it does.</p>
-          <div class="rc-time">⏱ 8 min read</div>
+        <a href="https://claude.com/resources/tutorials/claude-for-marketing" target="_blank" class="resource-card">
+          <div class="rc-tag">Tutorial</div>
+          <h4>Claude for Marketing</h4>
+          <p>How to use Claude for marketing workflows, content creation, and campaigns.</p>
+          <div class="rc-time">⏱ Tutorial</div>
         </a>
-      </div>
-
-      <div class="resource-section-title">Get better results — prompting guides</div>
-      <div class="resource-grid">
-        <a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank" class="resource-card featured">
+        <a href="https://claude.com/resources/tutorials/claude-for-product-management" target="_blank" class="resource-card">
+          <div class="rc-tag">Tutorial</div>
+          <h4>Claude for Product Management</h4>
+          <p>Using Claude for roadmaps, user research synthesis, and PM workflows.</p>
+          <div class="rc-time">⏱ Tutorial</div>
+        </a>
+        <a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview" target="_blank" class="resource-card">
           <div class="rc-tag">Official Docs</div>
           <h4>Prompt Engineering Guide</h4>
-          <p>The definitive guide to writing better prompts. Covers clear instructions, examples, step-by-step reasoning, and formatting tips.</p>
+          <p>Write better prompts — clear instructions, examples, step-by-step reasoning.</p>
           <div class="rc-time">⏱ 20 min read</div>
         </a>
-        <a href="https://www.anthropic.com/news/prompting-tips" target="_blank" class="resource-card">
-          <div class="rc-tag">Tips</div>
-          <h4>10 Prompting Tips from Anthropic</h4>
-          <p>Quick, practical tips for getting better answers from Claude — written by the people who built it.</p>
+        <a href="https://support.claude.com/en/articles/13364135-use-cowork-safely" target="_blank" class="resource-card">
+          <div class="rc-tag">Safety</div>
+          <h4>Use Cowork Safely</h4>
+          <p>Important safety guidance for using Claude Cowork responsibly.</p>
           <div class="rc-time">⏱ 5 min read</div>
-        </a>
-        <a href="https://support.claude.ai/hc/en-us/articles/22321869703699-Getting-started-with-Claude" target="_blank" class="resource-card">
-          <div class="rc-tag">Guide</div>
-          <h4>Getting Started with Claude</h4>
-          <p>Anthropic's own onboarding guide — walks through the basics of how to use Claude effectively from day one.</p>
-          <div class="rc-time">⏱ 10 min read</div>
-        </a>
-      </div>
-
-      <div class="resource-section-title">Using Claude as a team</div>
-      <div class="resource-grid">
-        <a href="https://support.claude.ai/hc/en-us/categories/22448100516883-Claude-for-Teams" target="_blank" class="resource-card">
-          <div class="rc-tag">Team Guide</div>
-          <h4>Claude for Teams — Help Centre</h4>
-          <p>Everything you need to know about how our team account works — billing, sharing, admin controls, and best practices.</p>
-          <div class="rc-time">⏱ Help centre</div>
-        </a>
-        <a href="https://www.anthropic.com/claude/connectors" target="_blank" class="resource-card">
-          <div class="rc-tag">Integrations</div>
-          <h4>All Available Connectors</h4>
-          <p>The full list of apps and tools Claude can connect to — from Google Workspace to Slack to GitHub.</p>
-          <div class="rc-time">⏱ Reference page</div>
-        </a>
-        <a href="https://www.anthropic.com/news/anthropic-economic-futures" target="_blank" class="resource-card">
-          <div class="rc-tag">Article</div>
-          <h4>The Future of AI at Work</h4>
-          <p>Anthropic's perspective on how AI will change jobs and industries — thoughtful and worth a read.</p>
-          <div class="rc-time">⏱ 15 min read</div>
         </a>
       </div>
 

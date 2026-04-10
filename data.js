@@ -60,6 +60,7 @@ const CONNECTORS = [
   { name: "Linear",        icon: "🔷" },
   { name: "Web Search",    icon: "🔍" },
   { name: "VS Code",       icon: "💻" },
+  { name: "Other",         icon: "➕" },
 ];
 
 // ---- Admin PIN ----
@@ -201,32 +202,33 @@ const DB = {
     return this.getLocalConnectors();
   },
 
-  // --- UPDATES ---
-  async addUpdate(title, body, tag, author) {
-    const update = {
-      id: Date.now(),
-      title, body, tag, author,
-      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-      timestamp: new Date().toISOString()
-    };
-    // Cache locally
-    const updates = JSON.parse(localStorage.getItem('p24_updates') || 'null') || DEFAULT_UPDATES;
-    updates.push(update);
-    localStorage.setItem('p24_updates', JSON.stringify(updates));
-    // Write to Sheet
-    await this.call('addUpdate', update);
-    return update;
+  // --- DATA UPLOAD CHECKLIST ---
+  async signChecklist(name) {
+    const timestamp = new Date().toISOString();
+    const checklist = JSON.parse(localStorage.getItem('p24_checklist') || '{}');
+    checklist[name] = timestamp;
+    localStorage.setItem('p24_checklist', JSON.stringify(checklist));
+    return this.call('signChecklist', { name, timestamp });
   },
 
-  getLocalUpdates() {
-    const stored = localStorage.getItem('p24_updates');
-    return stored ? JSON.parse(stored) : DEFAULT_UPDATES;
+  getLocalChecklist() {
+    return JSON.parse(localStorage.getItem('p24_checklist') || '{}');
   },
 
-  async getUpdates() {
-    const result = await this.call('getUpdates');
-    if (result.ok && result.data && result.data.length > 0) return result.data;
-    return this.getLocalUpdates();
+  async getChecklist() {
+    const result = await this.call('getChecklist');
+    if (result.ok) return result.data;
+    return this.getLocalChecklist();
+  },
+
+  isChecklistSignedLocally(name) {
+    const checklist = JSON.parse(localStorage.getItem('p24_checklist') || '{}');
+    return !!checklist[name];
+  },
+
+  getChecklistSignedDateLocally(name) {
+    const checklist = JSON.parse(localStorage.getItem('p24_checklist') || '{}');
+    return checklist[name] || null;
   },
 
 };
