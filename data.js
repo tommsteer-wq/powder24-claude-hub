@@ -17,7 +17,9 @@ const SHEET_ID = '1wf7z-RTS74v3oYedc-Xm3saqMwKYsjwjqAYyeiQWbTQ';
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1vw_9AS2YSeoPfPkJOyxaTK8R6epPHTckDb3Mq42MyFf6RcryZYU2y9O8eOkejWYC/exec';
 
 // ---- Team members ----
-const TEAM = [
+// This is the base list. Additional members can be added via the Admin panel
+// and are stored in Google Sheets — they are merged in at startup.
+let TEAM = [
   { name: "Aidan",     admin: false, pin: '23456' },
   { name: "Anna",      admin: false, pin: '23456' },
   { name: "Cedric",    admin: false, pin: '23456' },
@@ -31,6 +33,7 @@ const TEAM = [
   { name: "Keegan",    admin: false, pin: '23456' },
   { name: "Lewis",     admin: false, pin: '23456' },
   { name: "Lou",       admin: true,  pin: '77777' },
+  { name: "Meg",       admin: false, pin: '23456' },
   { name: "Shawsy",    admin: false, pin: '23456' },
   { name: "Ollie",     admin: false, pin: '23456' },
   { name: "Paul",      admin: false, pin: '23456' },
@@ -155,6 +158,21 @@ const DB = {
     localStorage.removeItem('p24_logins');
     localStorage.removeItem('p24_lastseen');
     return this.call('clearLogins');
+  },
+
+  // --- TEAM MANAGEMENT ---
+  async getTeam() {
+    const result = await this.call('getTeam');
+    if (result.ok) return result.data; // array of { name, pin }
+    return [];
+  },
+
+  async addTeamMember(name, pin) {
+    return this.call('addTeamMember', { name, pin });
+  },
+
+  async removeTeamMember(name) {
+    return this.call('removeTeamMember', { name });
   },
 
   // --- AGREEMENTS ---

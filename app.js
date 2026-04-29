@@ -9,7 +9,20 @@ let currentUser = null;
    INIT
    ============================================================ */
 
-function init() {
+async function init() {
+  // Load any extra team members added via the Admin panel from Google Sheets,
+  // then merge them into the TEAM array before rendering the login grid.
+  if (DB.isConnected()) {
+    try {
+      const extra = await DB.getTeam();
+      extra.forEach(e => {
+        if (!TEAM.find(m => m.name === e.name)) {
+          TEAM.push({ name: e.name, admin: false, pin: e.pin || '23456' });
+        }
+      });
+      TEAM.sort((a, b) => a.name.localeCompare(b.name));
+    } catch(_) {}
+  }
   renderLoginGrid();
   if (!DB.isConnected()) {
     console.info('[Hub] Running in local mode — connect Google Sheet to enable live data sync.');
@@ -364,6 +377,9 @@ async function renderAdmin() {
   document.getElementById('sheetLink').innerHTML = DB.isConnected()
     ? `📊 <strong>Data is syncing live.</strong> <a href="https://docs.google.com/spreadsheets/d/${SHEET_ID}" target="_blank">View raw data in Google Sheets ↗</a>`
     : `⚠️ <strong>Running in local mode.</strong> Data is saved in this browser only. Add the Apps Script URL to data.js to enable live sync across all devices.`;
+
+  // Team manager
+  renderTeamManager();
 }
 
 /* ============================================================
@@ -376,6 +392,75 @@ async function confirmResetStats() {
   await DB.clearLogins();
   showToast('✅ Login stats cleared');
   renderAdmin();
+}
+
+/* ============================================================
+   ADMIN — TEAM MANAGEMENT
+   ============================================================ */
+
+async function renderTeamManager() {
+  const container = document.getElementById('teamManagerList');
+  container.innerHTML = '<div style="color:var(--white40);font-size:13px">Loading…</div>';
+
+  // Sheet-only members (not in hardcoded TEAM)
+  let sheetMembers = [];
+  if (DB.isConnected()) {
+    try { sheetMembers = await DB.getTeam(); } catch(_) {}
+  }
+
+  if (!sheetMembers.length) {
+    container.innerHTML = '<div style="color:var(--white40);font-size:13px">No members added via this panel yet.</div>';
+    return;
+  }
+
+  container.innerHTML = sheetMembers.map(m => `
+    <div class="team-manager-row">
+      <span>${m.name}</span>
+      <span style="color:var(--white40);font-size:12px">PIN: ${m.pin}</span>
+      <button class="btn-secondary" onclick="confirmRemoveMember('${m.name}')" style="font-size:11px;padding:4px 12px;margin-left:auto;">Remove</button>
+    </div>
+  `).join('');
+}
+
+async function addTeamMember() {
+  const nameInput = document.getElementById('newMemberName');
+  const pinInput  = document.getElementById('newMemberPin');
+  const name = nameInput.value.trim();
+  const pin  = pinInput.value.trim() || '23456';
+
+  if (!name) { showToast('Please enter a name'); return; }
+  if (TEAM.find(m => m.name.toLowerCase() === name.toLowerCase())) {
+    showToast('That name already exists'); return;
+  }
+  if (pin.length !== 5 || isNaN(pin)) {
+    showToast('PIN must be exactly 5 digits'); return;
+  }
+
+  showToast('Adding member…');
+  const result = await DB.addTeamMember(name, pin);
+  if (result && result.ok === false) { showToast('Error: ' + result.error); return; }
+
+  // Add to live TEAM array so they appear on login screen immediately (until page refresh)
+  TEAM.push({ name, admin: false, pin });
+  TEAM.sort((a, b) => a.name.localeCompare(b.name));
+  renderLoginGrid();
+
+  nameInput.value = '';
+  pinInput.value  = '';
+  showToast(`✅ ${name} added! They can log in straight away.`);
+  renderTeamManager();
+}
+
+async function confirmRemoveMember(name) {
+  if (!confirm(`Remove ${name} from the team? They will no longer be able to log in.`)) return;
+  showToast('Removing…');
+  await DB.removeTeamMember(name);
+  // Remove from live TEAM array
+  const idx = TEAM.findIndex(m => m.name === name);
+  if (idx > -1) TEAM.splice(idx, 1);
+  renderLoginGrid();
+  showToast(`✅ ${name} removed`);
+  renderTeamManager();
 }
 
 /* ============================================================

@@ -354,6 +354,16 @@
           <table class="admin-table" id="connectorAdoptionTable"></table>
         </div>
       </div>
+      <div class="admin-section">
+        <h3>➕ Manage Team Members</h3>
+        <p style="color:var(--white40);font-size:13px;margin-bottom:16px">Add new starters here — they'll appear on the login screen immediately. Default PIN is 23456 (same as everyone else) unless you set a different one.</p>
+        <div class="team-manager-form">
+          <input type="text" id="newMemberName" placeholder="First name" class="admin-input" autocomplete="off">
+          <input type="text" id="newMemberPin" placeholder="PIN (leave blank for 23456)" class="admin-input" maxlength="5" autocomplete="off">
+          <button class="btn-primary" onclick="addTeamMember()" style="white-space:nowrap">Add Member</button>
+        </div>
+        <div id="teamManagerList" style="margin-top:16px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
       <div class="info-note" id="sheetLink"></div>
     </div>
   </div>

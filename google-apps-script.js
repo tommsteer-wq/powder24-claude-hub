@@ -22,6 +22,7 @@ const SHEETS = {
   CONNECTORS:  'Connectors',
   UPDATES:     'Updates',
   CHECKLIST:   'Checklist',
+  TEAM:        'Team',
 };
 
 function setupSheets() {
@@ -32,6 +33,7 @@ function setupSheets() {
     { name: SHEETS.CONNECTORS, headers: ['Name', 'Connector', 'Value', 'Updated At'] },
     { name: SHEETS.UPDATES,    headers: ['ID', 'Title', 'Body', 'Tag', 'Date', 'Author', 'Timestamp'] },
     { name: SHEETS.CHECKLIST,  headers: ['Name', 'Signed At'] },
+    { name: SHEETS.TEAM,       headers: ['Name', 'PIN', 'Added At'] },
   ];
   configs.forEach(cfg => {
     let sheet = ss.getSheetByName(cfg.name);
@@ -88,6 +90,10 @@ function doGet(e) {
     else if (action === 'addUpdate')       result = handleAddUpdate(e.parameter);
     else if (action === 'signChecklist')   result = handleSignChecklist(e.parameter);
     else if (action === 'getChecklist')    result = handleGetChecklist();
+    else if (action === 'clearLogins')     result = handleClearLogins();
+    else if (action === 'getTeam')         result = handleGetTeam();
+    else if (action === 'addTeamMember')   result = handleAddTeamMember(e.parameter);
+    else if (action === 'removeTeamMember') result = handleRemoveTeamMember(e.parameter);
     else result = { ok: false, error: 'Unknown action: ' + action };
   } catch (err) {
     result = { ok: false, error: err.toString() };
@@ -130,6 +136,44 @@ function handleRecordLogin(params) {
   }
   if (!found) { sheet.appendRow([name, 1, timestamp]); }
   return { ok: true };
+}
+
+function handleClearLogins() {
+  const sheet   = getSheet(SHEETS.LOGINS);
+  const lastRow = sheet.getLastRow();
+  if (lastRow > 1) sheet.deleteRows(2, lastRow - 1);
+  return { ok: true };
+}
+
+function handleGetTeam() {
+  const sheet = getSheet(SHEETS.TEAM);
+  const rows  = sheetToObjects(sheet);
+  const data  = rows.map(r => ({ name: r['Name'], pin: String(r['PIN'] || '23456') }));
+  return { ok: true, data };
+}
+
+function handleAddTeamMember(params) {
+  const name      = params.name;
+  const pin       = params.pin || '23456';
+  const timestamp = new Date().toISOString();
+  const sheet     = getSheet(SHEETS.TEAM);
+  const data      = sheet.getDataRange().getValues();
+  // Prevent duplicates
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === name) return { ok: false, error: 'Name already exists' };
+  }
+  sheet.appendRow([name, pin, timestamp]);
+  return { ok: true };
+}
+
+function handleRemoveTeamMember(params) {
+  const name  = params.name;
+  const sheet = getSheet(SHEETS.TEAM);
+  const data  = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === name) { sheet.deleteRow(i + 1); return { ok: true }; }
+  }
+  return { ok: false, error: 'Not found' };
 }
 
 function handleGetAgreements() {
