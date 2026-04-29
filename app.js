@@ -37,7 +37,8 @@ function renderLoginGrid() {
 
 function handleLogin(name) {
   if (name === 'Guest') {
-    completeLogin({ name: 'Guest', admin: false }, false);
+    pinTarget = { name: 'Guest', admin: false, pin: '66666' };
+    openPinModal('Guest');
     return;
   }
   const member = TEAM.find(m => m.name === name);
@@ -363,6 +364,18 @@ async function renderAdmin() {
   document.getElementById('sheetLink').innerHTML = DB.isConnected()
     ? `📊 <strong>Data is syncing live.</strong> <a href="https://docs.google.com/spreadsheets/d/${SHEET_ID}" target="_blank">View raw data in Google Sheets ↗</a>`
     : `⚠️ <strong>Running in local mode.</strong> Data is saved in this browser only. Add the Apps Script URL to data.js to enable live sync across all devices.`;
+}
+
+/* ============================================================
+   RESET LOGIN STATS
+   ============================================================ */
+
+async function confirmResetStats() {
+  if (!confirm('This will clear all login counts and last-seen dates for the whole team. This cannot be undone. Continue?')) return;
+  showToast('Resetting stats…');
+  await DB.clearLogins();
+  showToast('✅ Login stats cleared');
+  renderAdmin();
 }
 
 /* ============================================================

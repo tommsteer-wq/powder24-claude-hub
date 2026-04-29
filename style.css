@@ -195,7 +195,10 @@ html, body {
 
 /* ===== TOP NAV ===== */
 .topnav {
-  background: rgba(10,10,10,0.95);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,10,10,0.97);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   padding: 0 24px;
@@ -243,6 +246,9 @@ html, body {
 
 /* ===== TAB BAR ===== */
 .tab-bar {
+  position: sticky;
+  top: 57px;
+  z-index: 99;
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
   padding: 0 24px;
@@ -352,6 +358,7 @@ html, body {
   border-radius: var(--radius);
   padding: 32px;
   line-height: 1.8;
+  margin-top: 48px;
 }
 
 .welcome-message h2 { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
@@ -438,6 +445,17 @@ html, body {
 
 .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
 .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 24px;
+  padding: 10px 20px;
+  color: var(--white40); font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-secondary:hover { border-color: rgba(255,255,255,0.5); color: var(--white); }
 
 .btn-ghost {
   background: none; border: none;
@@ -795,6 +813,7 @@ html, body {
   margin-bottom: 16px;
 }
 .compulsory-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.compulsory-grid-3 { grid-template-columns: repeat(3, 1fr); }
 .compulsory-card {
   display: block;
   background: var(--bg3);

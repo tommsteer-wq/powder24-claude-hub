@@ -18,27 +18,27 @@ const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw1vw_9AS2YSeoPfPkJO
 
 // ---- Team members ----
 const TEAM = [
-  { name: "Aidan",     admin: false, pin: '12345' },
-  { name: "Anna",      admin: false, pin: '12345' },
-  { name: "Cedric",    admin: false, pin: '12345' },
-  { name: "Charlotte", admin: false, pin: '12345' },
-  { name: "Chloe",     admin: false, pin: '12345' },
-  { name: "Civir",     admin: false, pin: '12345' },
-  { name: "Danny",     admin: false, pin: '12345' },
-  { name: "Dave",      admin: false, pin: '12345' },
-  { name: "Estelle",   admin: false, pin: '12345' },
-  { name: "Jane",      admin: false, pin: '12345' },
-  { name: "Keegan",    admin: false, pin: '12345' },
-  { name: "Lewis",     admin: false, pin: '12345' },
+  { name: "Aidan",     admin: false, pin: '23456' },
+  { name: "Anna",      admin: false, pin: '23456' },
+  { name: "Cedric",    admin: false, pin: '23456' },
+  { name: "Charlotte", admin: false, pin: '23456' },
+  { name: "Chloe",     admin: false, pin: '23456' },
+  { name: "Civir",     admin: false, pin: '23456' },
+  { name: "Danny",     admin: false, pin: '23456' },
+  { name: "Dave",      admin: false, pin: '23456' },
+  { name: "Estelle",   admin: false, pin: '23456' },
+  { name: "Jane",      admin: false, pin: '23456' },
+  { name: "Keegan",    admin: false, pin: '23456' },
+  { name: "Lewis",     admin: false, pin: '23456' },
   { name: "Lou",       admin: true,  pin: '77777' },
-  { name: "Shawsy",    admin: false, pin: '12345' },
-  { name: "Ollie",     admin: false, pin: '12345' },
-  { name: "Paul",      admin: false, pin: '12345' },
-  { name: "Richard",   admin: false, pin: '12345' },
-  { name: "Passmore",  admin: false, pin: '12345' },
+  { name: "Shawsy",    admin: false, pin: '23456' },
+  { name: "Ollie",     admin: false, pin: '23456' },
+  { name: "Paul",      admin: false, pin: '23456' },
+  { name: "Richard",   admin: false, pin: '23456' },
+  { name: "Passmore",  admin: false, pin: '23456' },
   { name: "Tom",       admin: true,  pin: '77777' },
-  { name: "Umad",      admin: false, pin: '12345' },
-  { name: "Will",      admin: false, pin: '12345' },
+  { name: "Umad",      admin: false, pin: '23456' },
+  { name: "Will",      admin: false, pin: '23456' },
 ];
 
 // ---- Connectors ----
@@ -60,7 +60,8 @@ const CONNECTORS = [
   { name: "Linear",        icon: "🔷" },
   { name: "Web Search",    icon: "🔍" },
   { name: "VS Code",       icon: "💻" },
-  { name: "Other",         icon: "➕" },
+  { name: "Other",          icon: "➕" },
+  { name: "None connected", icon: "🚫" },
 ];
 
 // ---- Admin PIN ----
@@ -148,6 +149,12 @@ const DB = {
     const result = await this.call('getLogins');
     if (result.ok) return result.data;
     return this.getLocalLogins();
+  },
+
+  async clearLogins() {
+    localStorage.removeItem('p24_logins');
+    localStorage.removeItem('p24_lastseen');
+    return this.call('clearLogins');
   },
 
   // --- AGREEMENTS ---
