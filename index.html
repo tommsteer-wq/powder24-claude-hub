@@ -1,1808 +1,383 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Weekly Wonders 🏆 3rd Edition</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  :root {
-    --bg: #0e1726;
-    --card: #1a2535;
-    --card2: #212f42;
-    --accent: #00ff87;
-    --gold: #ffd700;
-    --red: #ff4757;
-    --teal: #00c4b4;
-    --blue: #40a9ff;
-    --text: #e8edf3;
-    --muted: #7a8fa8;
-    --border: #263345;
-    --header-gradient: linear-gradient(135deg, #0a1628 0%, #0e1f3a 50%, #0a1628 100%);
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; font-size: 14px; }
-
-  /* HEADER */
-  .header {
-    background: var(--header-gradient);
-    padding: 20px 30px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 2px solid var(--accent);
-    position: sticky; top: 0; z-index: 100;
-  }
-  .header-left { display: flex; align-items: center; gap: 14px; }
-  .header-logo { font-size: 36px; }
-  .header-title h1 { font-size: 22px; font-weight: 700; color: var(--gold); letter-spacing: 1px; }
-  .header-title p { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .header-right { display: flex; align-items: center; gap: 16px; }
-  .gw-badge {
-    background: rgba(0,230,118,0.15);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-  }
-  .refresh-btn {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 12px;
-    display: flex; align-items: center; gap: 6px;
-    transition: all 0.2s;
-  }
-  .refresh-btn:hover { background: #00ff8a; transform: scale(1.03); }
-  .refresh-btn.loading { opacity: 0.6; cursor: wait; }
-  .last-updated { font-size: 11px; color: var(--muted); }
-
-  /* TABS */
-  .tabs {
-    background: var(--card);
-    display: flex;
-    overflow-x: auto;
-    border-bottom: 1px solid var(--border);
-    padding: 0 20px;
-  }
-  .tab {
-    padding: 14px 20px;
-    cursor: pointer;
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 500;
-    border-bottom: 3px solid transparent;
-    white-space: nowrap;
-    transition: all 0.2s;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-  /* MAIN */
-  .main { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
-  .section { display: none; }
-  .section.active { display: block; }
-
-  /* GRID */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
-  @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
-
-  /* CARDS */
-  .card {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid var(--border);
-  }
-  .card-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 16px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .card-title .icon { font-size: 16px; }
-
-  /* STAT CARDS */
-  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
-  @media (max-width: 800px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
-  .stat-card {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 16px;
-    border: 1px solid var(--border);
-    text-align: center;
-  }
-  .stat-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .stat-card .value { font-size: 26px; font-weight: 800; margin: 6px 0 4px; }
-  .stat-card .sub { font-size: 11px; color: var(--muted); }
-  .stat-card.green .value { color: var(--accent); }
-  .stat-card.gold .value { color: var(--gold); }
-  .stat-card.red .value { color: var(--red); }
-  .stat-card.blue .value { color: var(--blue); }
-
-  /* TABLES */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; }
-  thead th {
-    background: var(--card2);
-    color: var(--muted);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 10px 12px;
-    text-align: left;
-    font-weight: 600;
-  }
-  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
-  tbody tr:hover { background: rgba(255,255,255,0.03); }
-  tbody td { padding: 11px 12px; vertical-align: middle; }
-  .rank { font-weight: 800; font-size: 16px; width: 36px; color: var(--muted); }
-  .rank-1 { color: var(--gold) !important; }
-  .rank-2 { color: #c0c0c0 !important; }
-  .rank-3 { color: #cd7f32 !important; }
-  .rank-top { background: rgba(255,215,0,0.04); }
-  .rank-bottom { background: rgba(255,82,82,0.03); }
-  .current-user-row td { font-weight: 700 !important; }
-  .current-user-row td .player-name { color: var(--accent) !important; }
-  .current-user-row td .team-name { color: var(--accent); opacity: 0.7; }
-  .current-user-row { background: rgba(0,255,135,0.06) !important; outline: 1px solid rgba(0,255,135,0.2); outline-offset: -1px; }
-  .player-name { font-weight: 600; font-size: 14px; }
-  .team-name { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .pts-big { font-size: 18px; font-weight: 800; }
-  .gw-pts { font-size: 12px; color: var(--muted); }
-  .rank-change { font-size: 12px; font-weight: 600; }
-  .up { color: var(--accent); }
-  .down { color: var(--red); }
-  .same { color: var(--muted); }
-  .money { color: var(--accent); font-weight: 700; font-size: 15px; }
-  .losses-val { color: var(--red); font-weight: 700; }
-  .zero-losses { color: var(--accent); font-weight: 700; }
-
-  /* CHART CONTAINER */
-  .chart-container { position: relative; height: 340px; }
-
-  /* CHIP TABLE */
-  .chip-grid { overflow-x: auto; }
-  .chip-table th, .chip-table td { padding: 9px 10px; text-align: center; font-size: 12px; white-space: nowrap; }
-  .chip-table thead th { background: var(--card2); }
-  .chip-table .player-col { text-align: left; font-weight: 600; min-width: 90px; }
-  .chip-used { border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 700; display: inline-block; }
-  .chip-wc1 { background: rgba(124,77,255,0.25); color: #b39ddb; }
-  .chip-wc2 { background: rgba(124,77,255,0.4); color: #ce93d8; }
-  .chip-bb { background: rgba(255,215,0,0.2); color: var(--gold); }
-  .chip-tc { background: rgba(0,230,118,0.2); color: var(--accent); }
-  .chip-fh { background: rgba(64,169,255,0.2); color: var(--blue); }
-  .chip-fh2 { background: rgba(64,169,255,0.35); color: #81d4fa; }
-  .chip-avail { color: #2c3e50; font-size: 11px; }
-  .chip-highlight { background: rgba(0,230,118,0.08); }
-
-  /* PRIZE SECTION */
-  .prize-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 600px) { .prize-grid { grid-template-columns: 1fr; } }
-  .prize-item {
-    background: var(--card2);
-    border-radius: 10px;
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    border-left: 4px solid var(--border);
-  }
-  .prize-item.p1 { border-left-color: var(--gold); }
-  .prize-item.p2 { border-left-color: #c0c0c0; }
-  .prize-item.p3 { border-left-color: #cd7f32; }
-  .prize-item.p4 { border-left-color: #7a8fa8; }
-  .prize-item.cup { border-left-color: var(--accent); }
-  .prize-item.weekly { border-left-color: var(--blue); }
-  .prize-item.highest { border-left-color: var(--red); }
-  .prize-emoji { font-size: 28px; }
-  .prize-label { font-size: 13px; color: var(--muted); }
-  .prize-amount { font-size: 22px; font-weight: 800; color: var(--gold); }
-  .prize-note { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .prize-total {
-    background: var(--header-gradient);
-    border-radius: 12px;
-    padding: 20px 24px;
-    text-align: center;
-    margin-top: 20px;
-    border: 1px solid var(--accent);
-  }
-  .prize-total .big { font-size: 40px; font-weight: 900; color: var(--gold); }
-  .prize-total .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
-
-  /* REPORT SECTION */
-  .report-header {
-    background: var(--header-gradient);
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 20px;
-    border: 1px solid var(--border);
-  }
-  .report-gw { font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
-  .report-winner { font-size: 24px; font-weight: 800; margin: 8px 0 4px; }
-  .report-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 16px; }
-  @media (max-width: 700px) { .report-grid { grid-template-columns: 1fr 1fr; } }
-  .report-item { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px 14px; }
-  .report-item .rlabel { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
-  .report-item .rvalue { font-size: 15px; font-weight: 700; margin-top: 4px; }
-  .winner-val { color: var(--accent); }
-  .loser-val { color: var(--red); }
-  .report-mention {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 14px 18px;
-    margin-top: 14px;
-    border-left: 3px solid var(--gold);
-    font-style: italic;
-    color: var(--text);
-    line-height: 1.6;
-  }
-  .report-fact {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 14px 18px;
-    margin-top: 10px;
-    border-left: 3px solid var(--teal);
-    font-style: italic;
-    color: var(--text);
-    line-height: 1.6;
-  }
-  .report-archive { margin-top: 24px; }
-  .archive-week {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 0;
-    margin-bottom: 8px;
-    border: 1px solid var(--border);
-    overflow: hidden;
-  }
-  .archive-header {
-    padding: 12px 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .archive-header:hover { background: rgba(255,255,255,0.04); }
-  .archive-header .aw-title { font-weight: 600; font-size: 14px; }
-  .archive-header .aw-meta { font-size: 12px; color: var(--muted); }
-  .archive-header .toggle { color: var(--muted); font-size: 18px; }
-  .archive-body { display: none; padding: 0 18px 16px; border-top: 1px solid var(--border); }
-  .archive-body.open { display: block; }
-  .archive-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; font-size: 12px; }
-  .archive-mini .am-item .aml { color: var(--muted); font-size: 10px; text-transform: uppercase; }
-  .archive-mini .am-item .amv { font-weight: 700; margin-top: 2px; }
-
-  /* NEEDY LIST */
-  .needy-banner {
-    background: linear-gradient(135deg, #1a0a0a, #2d1010);
-    border: 2px solid var(--red);
-    border-radius: 14px;
-    padding: 24px;
-    margin-bottom: 24px;
-    text-align: center;
-  }
-  .needy-banner h2 { font-size: 22px; color: var(--red); margin-bottom: 6px; }
-  .needy-banner p { color: var(--muted); font-size: 13px; }
-  .needy-list { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
-  .needy-item {
-    background: rgba(255,82,82,0.1);
-    border: 1px solid var(--red);
-    border-radius: 10px;
-    padding: 16px 24px;
-    text-align: center;
-    min-width: 140px;
-  }
-  .needy-item .ni-emoji { font-size: 32px; margin-bottom: 8px; }
-  .needy-item .ni-name { font-size: 16px; font-weight: 700; }
-  .needy-item .ni-team { font-size: 11px; color: var(--muted); margin-top: 4px; }
-  .needy-item .ni-reason { font-size: 11px; color: var(--red); margin-top: 6px; font-style: italic; }
-
-  /* RIVALRY BOARD */
-  .rivalry-card {
-    background: var(--card2);
-    border-radius: 10px;
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .rivalry-players { display: flex; align-items: center; gap: 8px; font-weight: 700; }
-  .rivalry-vs { color: var(--muted); font-size: 11px; }
-  .rivalry-score { margin-left: auto; }
-  .rivalry-score span { font-weight: 800; }
-  .rivalry-score .winner-side { color: var(--accent); }
-  .rivalry-score .loser-side { color: var(--red); }
-
-  /* SECTION HEADING */
-  .section-heading {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .section-heading::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-    margin-left: 10px;
-  }
-
-  /* BADGES */
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-  .badge-green { background: rgba(0,230,118,0.15); color: var(--accent); }
-  .badge-red { background: rgba(255,82,82,0.15); color: var(--red); }
-  .badge-gold { background: rgba(255,215,0,0.15); color: var(--gold); }
-  .badge-blue { background: rgba(64,169,255,0.15); color: var(--blue); }
-
-  /* MINI LEADERBOARD IN OVERVIEW */
-  .mini-table tbody tr:last-child td { border-bottom: none; }
-
-  /* WEEKLY WINNER STREAK */
-  .streak-bar { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
-  .streak-gw {
-    width: 32px; height: 32px;
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.1s;
-  }
-  .streak-gw:hover { transform: scale(1.15); }
-  .streak-gw.won { background: rgba(0,230,118,0.25); color: var(--accent); border: 1px solid rgba(0,230,118,0.4); }
-  .streak-gw.lost { background: rgba(255,82,82,0.2); color: var(--red); border: 1px solid rgba(255,82,82,0.3); }
-  .streak-gw.mid { background: rgba(255,255,255,0.07); color: var(--muted); border: 1px solid var(--border); }
-
-  /* CHIP DANGER ZONE */
-  .danger-zone {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 12px;
-  }
-  .danger-player {
-    background: var(--card2);
-    border-radius: 10px;
-    padding: 14px;
-    border: 1px solid var(--border);
-  }
-  .danger-player.has-chips { border-color: rgba(0,230,118,0.3); }
-  .danger-player.no-chips { border-color: rgba(255,82,82,0.2); opacity: 0.6; }
-  .danger-player .dp-name { font-weight: 700; font-size: 13px; }
-  .danger-player .dp-chips { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
-
-  /* SCROLL TO TOP */
-  .sep { height: 1px; background: var(--border); margin: 24px 0; }
-
-  /* TOOLTIP */
-  [title] { cursor: help; }
-
-  .no-data { color: var(--muted); font-style: italic; text-align: center; padding: 20px; }
-
-  /* WELCOME SCREEN */
-  .welcome-overlay {
-    position: fixed; inset: 0; z-index: 9999;
-    background: var(--bg);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 30px 20px;
-  }
-  .welcome-overlay.hidden { display: none; }
-  .welcome-logo { font-size: 52px; margin-bottom: 12px; }
-  .welcome-title { font-size: 28px; font-weight: 900; color: var(--accent); margin-bottom: 6px; letter-spacing: 1px; }
-  .welcome-sub { font-size: 15px; color: var(--muted); margin-bottom: 36px; }
-  .welcome-question { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 20px; }
-  .welcome-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-    max-width: 900px;
-    width: 100%;
-  }
-  .welcome-player {
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.18s;
-  }
-  .welcome-player:hover {
-    border-color: var(--accent);
-    background: var(--card2);
-    transform: translateY(-2px);
-  }
-  .welcome-player .wp-nick { font-size: 16px; font-weight: 800; color: var(--accent); }
-  .welcome-player .wp-name { font-size: 11px; color: var(--muted); margin-top: 4px; }
-  .welcome-player .wp-team { font-size: 10px; color: var(--border); margin-top: 2px; }
-
-  /* VIEWER BADGE */
-  .viewer-badge {
-    background: rgba(0,255,135,0.12);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .viewer-badge:hover { background: rgba(0,255,135,0.2); }
-
-  /* CHIP TABLE - divider column */
-  .chip-divider { width: 3px; background: var(--border); padding: 0 !important; }
-  .chip-second-header { color: var(--teal) !important; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Powder24 × Claude — AI Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- ═══════════════════════ PASSWORD OVERLAY (STEER only) ═══════════════════════ -->
-<div class="welcome-overlay" id="passwordOverlay" style="display:none;">
-  <div class="welcome-logo">🔒</div>
-  <div class="welcome-title">Admin Access</div>
-  <div class="welcome-sub">Enter your PIN to continue</div>
-  <input type="password" id="pinInput" placeholder="PIN" maxlength="10"
-    style="margin:20px auto;display:block;padding:12px 20px;font-size:20px;border-radius:10px;border:2px solid var(--accent);background:var(--card2);color:var(--text);text-align:center;width:140px;letter-spacing:6px;"
-    onkeydown="if(event.key==='Enter')checkPin()">
-  <button onclick="checkPin()" style="margin-top:10px;padding:12px 32px;background:var(--accent);color:#000;font-weight:700;border:none;border-radius:8px;font-size:16px;cursor:pointer;">Enter</button>
-  <div id="pinError" style="color:var(--red);margin-top:12px;font-size:13px;"></div>
-  <button onclick="cancelPin()" style="margin-top:16px;padding:8px 20px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;">← Back</button>
+<!-- ===================== LOGIN SCREEN ===================== -->
+<div id="screen-login" class="screen active">
+  <div class="login-header">
+    <div class="login-logo">Powder<span>24</span></div>
+    <div class="login-divider"></div>
+    <div class="login-sub">× Claude AI Hub</div>
+  </div>
+  <div class="login-title">Select your name to continue</div>
+  <div class="team-grid" id="teamGrid"></div>
 </div>
 
-<!-- ═══════════════════════ WELCOME SCREEN ═══════════════════════ -->
-<div class="welcome-overlay" id="welcomeOverlay">
-  <div class="welcome-logo">⚽</div>
-  <div class="welcome-title">Weekly Wonders 🏆</div>
-  <div class="welcome-sub">3rd Edition · 2025/26</div>
-  <div class="welcome-question">Who are you?</div>
-  <div class="welcome-grid" id="welcomeGrid"></div>
+<!-- ===================== PIN MODAL ===================== -->
+<div class="modal-overlay" id="pinModal">
+  <div class="modal">
+    <h3>Admin Access</h3>
+    <p id="pinModalDesc">Enter your 5-digit PIN</p>
+    <div class="pin-display" id="pinDisplay">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+      <div class="pin-dot" id="d4"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-key" onclick="pinPress('1')">1</button>
+      <button class="pin-key" onclick="pinPress('2')">2</button>
+      <button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button>
+      <button class="pin-key" onclick="pinPress('5')">5</button>
+      <button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button>
+      <button class="pin-key" onclick="pinPress('8')">8</button>
+      <button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key" onclick="pinPress('back')" style="font-size:16px">⌫</button>
+      <button class="pin-key" onclick="pinPress('0')">0</button>
+      <button class="pin-key" onclick="pinPress('clear')" style="font-size:12px;color:var(--white40)">CLR</button>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+    <button class="btn-ghost" onclick="closePinModal()">Cancel</button>
+  </div>
 </div>
 
-<!-- ═══════════════════════ HEADER ═══════════════════════ -->
-<div class="header">
-  <div class="header-left">
-    <div class="header-logo">⚽</div>
-    <div class="header-title">
-      <h1>Weekly Wonders 🏆</h1>
-      <p>3rd Edition · FPL League 46235</p>
+<!-- ===================== MAIN APP ===================== -->
+<div id="screen-app" class="screen">
+
+  <!-- Top Nav -->
+  <nav class="topnav">
+    <div class="nav-brand">
+      <span>Powder24</span>
+      <span class="logo-pill">× Claude</span>
     </div>
-  </div>
-  <div class="header-right">
-    <span class="viewer-badge" onclick="showWelcome()" id="viewerBadge" title="Click to change player">👤 —</span>
-    <div>
-      <div class="gw-badge" id="gwBadge">GW 34</div>
-      <div class="last-updated" id="lastUpdated">Last updated: 1 May 2026</div>
+    <div class="nav-right">
+      <div class="nav-user">
+        <div class="nav-avatar" id="navAvatar"></div>
+        <span id="navName"></span>
+      </div>
+      <button class="btn-logout" onclick="logout()">Log out</button>
     </div>
-    <button class="refresh-btn" onclick="refreshData()">↺ Live Refresh</button>
+  </nav>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar" id="tabBar">
+    <button class="tab-btn active" onclick="switchTab('welcome', this)">🏔️ Home</button>
+    <button class="tab-btn" onclick="switchTab('agreement', this)">📖 Claude Basics</button>
+    <button class="tab-btn" onclick="switchTab('checklist', this)">📋 Data Checklist</button>
+    <button class="tab-btn" onclick="switchTab('connectors', this)">🔌 Connectors</button>
+    <button class="tab-btn" onclick="switchTab('learn', this)">🎓 Learn</button>
+    <button class="tab-btn admin-tab" id="adminTabBtn" onclick="switchTab('admin', this)" style="display:none">⚙️ Admin</button>
   </div>
-</div>
 
-<!-- ═══════════════════════ TABS ═══════════════════════ -->
-<div class="tabs">
-  <div class="tab active" onclick="showTab('overview',this)">📊 Overview</div>
-  <div class="tab" onclick="showTab('money',this)">💰 Money</div>
-  <div class="tab" onclick="showTab('chips',this)">🎰 Chips</div>
-  <div class="tab" onclick="showTab('reports',this)">📋 Reports</div>
-  <div class="tab" onclick="showTab('extras',this)">⭐ Extras</div>
-  <div class="tab" onclick="showTab('prizes',this)">🏅 Prize Structure</div>
-  <div class="tab" id="adminTab" onclick="showTab('admin',this)" style="display:none;">🔐 Admin</div>
-</div>
-
-<!-- ═══════════════════════ MAIN CONTENT ═══════════════════════ -->
-<div class="main">
-
-  <!-- ─────── OVERVIEW TAB ─────── -->
-  <div class="section active" id="tab-overview">
-    <div class="stat-grid" id="statGrid"></div>
-
-    <div class="grid-2">
-      <!-- FPL League Table -->
-      <div class="card" style="grid-column: 1/-1;">
-        <div class="card-title"><span class="icon">🏆</span> FPL League Standings — Weekly Wonders 3rd Edition</div>
-        <div class="table-wrap">
-          <table id="standingsTable">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Manager</th>
-                <th>GW Pts</th>
-                <th>Total</th>
-                <th>Gap to Leader</th>
-                <th>Change</th>
-              </tr>
-            </thead>
-            <tbody id="standingsTbody"></tbody>
-          </table>
+  <!-- == HOME TAB == -->
+  <div class="tab-content active" id="tab-welcome">
+    <div class="welcome-hero">
+      <div class="welcome-hero-content">
+        <h1>Welcome to the<br><span>Powder24 AI Hub</span></h1>
+        <p>Your central resource for everything Claude — get set up, stay informed, and help shape how we work smarter.</p>
+      </div>
+    </div>
+    <div class="tab-page">
+      <div class="welcome-cards home-grid-2x2">
+        <div class="wcard clickable" onclick="switchTab('agreement', document.querySelectorAll('.tab-btn')[1])">
+          <div class="wcard-icon">📖</div>
+          <h3>Claude Basics</h3>
+          <p>Read through the essentials of how Claude works, which products and models to use, and sign to confirm you've understood.</p>
+        </div>
+        <div class="wcard clickable" onclick="switchTab('connectors', document.querySelectorAll('.tab-btn')[3])">
+          <div class="wcard-icon">🔌</div>
+          <h3>Log Your Connectors</h3>
+          <p>Tell us which Claude integrations you've tried — helps the team understand where AI is making a difference.</p>
+        </div>
+        <div class="wcard clickable" onclick="switchTab('checklist', document.querySelectorAll('.tab-btn')[2])">
+          <div class="wcard-icon">📋</div>
+          <h3>Data Upload Checklist</h3>
+          <p>Before uploading anything to Claude, run through this quick checklist to keep data safe and compliant.</p>
+        </div>
+        <div class="wcard clickable" onclick="switchTab('learn', document.querySelectorAll('.tab-btn')[4])">
+          <div class="wcard-icon">🎓</div>
+          <h3>Log Your Learning</h3>
+          <p>Access the compulsory courses and other resources to build your Claude skills and earn certificates.</p>
         </div>
       </div>
-    </div>
-
-    <div class="sep"></div>
-
-    <!-- Season Trajectory -->
-    <div class="card" style="margin-bottom: 20px;">
-      <div class="card-title">
-        <span class="icon">📈</span> Season Trajectory — Cumulative Points
-        <span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:10px;">💡 Tick names on the right to compare against your rivals</span>
-      </div>
-      <div class="chart-container" style="height:520px;">
-        <canvas id="trajectoryChart"></canvas>
-      </div>
-    </div>
-
-    <!-- Weekly Performance -->
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title"><span class="icon">🎯</span> Weekly Winners</div>
-        <div id="weeklyWinners" class="streak-bar"></div>
-        <p style="font-size:11px;color:var(--muted);margin-top:10px;">Hover for details · <span style="color:var(--accent)">■</span> Won the week &nbsp; <span style="color:var(--red)">■</span> Bottom · <span style="color:var(--muted)">■</span> Middle</p>
-      </div>
-      <div class="card">
-        <div class="card-title"><span class="icon">📊</span> Average Score by Week</div>
-        <div class="chart-container" style="height:200px;">
-          <canvas id="avgChart"></canvas>
-        </div>
+      <div class="welcome-message">
+        <h2>A message from Powder24</h2>
+        <p>AI is moving fast and so are we. We are actively doing what we can to adopt and adapt — our approach will evolve as we learn more and as the tools themselves develop.</p>
+        <p>If you're unsure about anything, the right thing to do is ask rather than assume and we can work it through together.</p>
+        <p>We'd ask that everyone is adaptable and pragmatic — some of the guidance above may change as we learn more, and some of it may tighten further.</p>
+        <p>We're approaching this piece by piece, balancing risk and opportunity in equal measure while keeping up with the pace of the broader AI landscape.</p>
+        <p>Your patience and cooperation as we get this right is appreciated.</p>
       </div>
     </div>
   </div>
 
-  <!-- ─────── MONEY TAB ─────── -->
-  <div class="section" id="tab-money">
-    <div class="grid-2">
-      <!-- Money Leaderboard -->
-      <div class="card">
-        <div class="card-title"><span class="icon">💰</span> Winnings Leaderboard</div>
-        <div class="table-wrap">
-          <table id="moneyTable">
-            <thead>
-              <tr><th>#</th><th>Manager</th><th>Team</th><th>Winnings</th></tr>
-            </thead>
-            <tbody id="moneyTbody"></tbody>
-          </table>
-        </div>
-        <div style="margin-top:14px;padding:12px;background:var(--card2);border-radius:8px;font-size:12px;color:var(--muted);">
-          💡 Winnings include weekly prizes (1st/2nd each GW) — end-of-season prizes not yet allocated.
-        </div>
+  <!-- == CLAUDE BASICS TAB == -->
+  <div class="tab-content" id="tab-agreement">
+    <div class="tab-page">
+      <div class="page-header">
+        <h2>Claude in a Nutshell</h2>
+        <div class="grad-line"></div>
+        <p>A structured overview of how Claude is set up, which products and models to use and when, and where to build your knowledge further. Items highlighted in <span class="governance-highlight">green</span> are governance points. Read through and sign at the bottom.</p>
       </div>
+      <div class="agreement-doc">
 
-      <!-- Loser Leaderboard -->
-      <div class="card">
-        <div class="card-title" style="display:flex;align-items:center;gap:10px;"><span style="display:flex;align-items:center;gap:6px;"><span class="icon">😬</span> Hall of Shame — Most Last Places</span><img src="bottom.jpg" alt="Bottom" style="height:36px;width:auto;border-radius:4px;object-fit:cover;opacity:0.9;" onerror="this.style.display='none'"></div>
-        <div class="table-wrap">
-          <table id="loserTable">
-            <thead>
-              <tr><th>#</th><th>Manager</th><th>Team</th><th>Times Bottom</th></tr>
-            </thead>
-            <tbody id="loserTbody"></tbody>
-          </table>
+        <h3>Think of Claude as an intelligence with 3 platforms, 3 products and 3 models</h3>
+        <p>The more you collaborate and test, the more it makes sense and the better Claude can assist you.</p>
+        <p>Getting started with Claude in a structured way will save you a lot of time. This guide gives you a simple overview of how Claude is set up, which products and models to use and when, and where to go to build your knowledge further. It's not exhaustive — it's intentionally a starting point to act as a frame for you to explore from.</p>
+        <p>Items highlighted in <span class="governance-highlight">green</span> are governance points.</p>
+
+        <h4>Claude is available on 3 platforms</h4>
+        <ul>
+          <li><strong>Web (Claude.ai)</strong> — "boxed off", it can only see files that have been uploaded.</li>
+          <li><strong>Desktop</strong> — meaningfully more capable. The Cowork product only works on desktop.</li>
+          <li><strong>Mobile</strong> — not great for building projects or complex tasks, but great for quick questions and consuming information. Has a native voice mode so you can speak to it and get spoken replies.</li>
+        </ul>
+        <p>All 3 sync to each other when logged into your account.</p>
+        <p class="policy-date">Summary: use Desktop for everyday work, Mobile for quick questions when away from your desk.</p>
+
+        <h4>Claude has 3 main products</h4>
+        <ul>
+          <li><strong>Claude Chat</strong> — an LLM like ChatGPT. You prompt it, it responds. Great for brainstorming ideas and augmenting human thinking.</li>
+          <li><strong>Claude Cowork</strong> — for non-technical people who want agentic automation (allowing repetitive and rule-bound tasks to be automated) or more complex projects pulling from multiple sources. It can also organise multiple files. Only available in the Desktop app and it can only see what is shared with it. Think of Cowork as conversation shifting to delegation.</li>
+          <li><strong>Claude Code</strong> — for developers. An AI coding assistant that delegates technical execution.</li>
+        </ul>
+        <p class="policy-date">Summary: use Chat for everyday tasks, Cowork for more complex projects.</p>
+        <p class="governance-note">Please read the <a href="https://support.claude.com/en/articles/13364135-use-cowork-safely" target="_blank">"Use Cowork safely" articles here</a>.</p>
+
+        <h4>Claude has 3 models</h4>
+        <ul>
+          <li><strong>Opus</strong> — for complex tasks.</li>
+          <li><strong>Sonnet</strong> — for everyday use. This should be your default.</li>
+          <li><strong>Haiku</strong> — the quickest and lightest.</li>
+        </ul>
+        <p>You select the model in the chat field via a simple dropdown.</p>
+
+        <h4>Additional functions</h4>
+        <ul>
+          <li><strong>Extended Thinking</strong> — on the same dropdown. Good for complex planning. Keep off by default and switch on when needed to manage usage. When on, it allows you visibility on how Claude reached a conclusion (called "Citations"), useful for complex tasks where verifying the output may be more complex.</li>
+          <li><strong>Research Mode</strong> — toggled by the + symbol in the chat field. Allows Claude to scan multi-angle sources. Increases output time and usage rates. When in Research Mode, Extended Thinking should also be turned on as the two work best together.</li>
+        </ul>
+
+        <h4>Tutorials and Academy certification</h4>
+        <p>We would like all Claude company users to do the following academy courses:</p>
+        <ul>
+          <li><strong><a href="https://anthropic.skilljar.com/claude-101" target="_blank">Claude 101</a></strong> — foundational knowledge. We recommend watching the <a href="https://claude.com/resources/tutorials/getting-started-with-claude-ai" target="_blank">Getting Started with Claude AI</a> tutorial (5 mins) before starting. The course takes around 3 hours.</li>
+          <li><strong><a href="https://anthropic.skilljar.com/introduction-to-claude-cowork" target="_blank">Introduction to Claude Cowork</a></strong> — covers more specific use cases and plug-ins. Do this once Claude 101 feels comfortable. Takes around 2 hours.</li>
+        </ul>
+        <p>We suggest bookmarking the above 2 courses to refer back to. The hope is that once you've completed these courses, you'll be able to review task lists and understand how Claude can streamline how objectives are achieved.</p>
+        <p>Once you have completed the courses, you receive a certificate on your account:</p>
+        <div class="cert-image-wrap">
+          <img src="cert-example.png" alt="Example certificate on Anthropic Academy profile" class="cert-image">
         </div>
-        <div style="margin-top:14px;padding:12px;background:var(--card2);border-radius:8px;font-size:12px;color:var(--muted);">
-          📢 Finishing bottom carries no financial penalty — just the shame.
-        </div>
+        <p>The above guide should be read in parallel to Powder24's AI usage policy and parameters.</p>
+        <p>The Anthropic Academy is extensive. In addition to the above, you may find tutorials that focus on specific departments useful. See the section under <a href="https://www.anthropic.com/learn/claude-for-work" target="_blank">"Ways to use Claude" here</a> (for example, <a href="https://claude.com/resources/tutorials/claude-for-marketing" target="_blank">Claude for Marketing</a> / <a href="https://claude.com/resources/tutorials/claude-for-product-management" target="_blank">Claude for Product Management</a>).</p>
+        <p>The <a href="https://www.anthropic.com/learn/claude-for-you" target="_blank">AI Fluency Framework course</a> is also useful as a recap on how to best use AI platforms, both from an efficiency perspective and from an ethical and risk-aware level.</p>
+
+        <h4>Projects vs Chats</h4>
+        <ul>
+          <li><strong>Chats</strong> — standalone conversations. Each starts fresh with no memory of previous sessions. Great for one-off tasks, quick questions, or exploratory thinking.</li>
+          <li><strong>Projects</strong> — give Claude persistent context across multiple conversations, meaning you can store background information that Claude will refer back to every time you open that project. Use a Project for anything recurring or where context matters (and you don't want to keep repeating the context).</li>
+        </ul>
+        <p>Chats can be linked into Projects or created within them.</p>
+
+        <h4>Connectors</h4>
+        <p>Connectors allow Claude to link directly to external tools and platforms you already use — Google Drive, Slack, Notion, or calendars. Once connected, Claude can read from and in some cases interact with those tools.</p>
+        <p class="governance-note">For now, we are doing an audit of which connectors people have used before confirming what we are happy with. Please avoid connecting any more connectors until we have completed the audit or if you need something urgently, please ask LJ/TS. As a general principle, we should only connect tools that hold data you'd be comfortable with Claude having visibility of, and be clear on the set-up permissions when connecting the tool.</p>
+        <p class="governance-note">Once the connectors audit is complete, we will communicate settings that should be checked are in place. For each connector, it is vital that you check your settings match what we communicate exactly, even if the system allows you to do otherwise. In the interim, consider the settings of any connected apps — "read only" or "ask before acting" are typical instructions to opt for rather than allowing full access.</p>
+
+        <h4>Other operating principles</h4>
+        <ul>
+          <li class="governance-note"><strong>Claude in Chrome:</strong> Should be disabled at individual level, even though it is authorised at organisation level. We recognise this has significant potential and are currently testing it, but as Anthropic themselves advise, it should only be used for low-risk activity while in beta. We'll revisit this as it matures — please keep it disabled for now.</li>
+          <li class="governance-note"><strong>Desktop app, not web:</strong> Please use the Claude desktop app for general work, rather than the web interface. According to Anthropic's own guidelines, the desktop app has a stronger security profile. This is particularly important when working with any sensitive or commercial documentation.</li>
+          <li class="governance-note"><strong>Web search:</strong> Currently disabled at organisation level. The reason is that web search involves some data considerations we are yet to fully vet or understand. Until we've assessed the risk and defined appropriate use cases, the conservative position is to keep it off.</li>
+          <li class="governance-note"><strong>Training data:</strong> We have opted out of Anthropic's model training programme at the organisation level. This means your inputs and outputs are not used to train or improve Claude's models. This does not affect the quality of the tool — it is a data protection decision.</li>
+        </ul>
+
+        <h4>Saving and storing work generated by Claude</h4>
+        <p>For the Claude desktop app, Claude operates locally — it saves files to your computer's file system. Whilst work is being generated and stored locally, we recommend:</p>
+        <ul>
+          <li>Uploading any work to G Drive as you would normally.</li>
+          <li>Deleting from your local storage once this is done to save on space.</li>
+        </ul>
+        <p>For the Claude web interface, files behave differently. Files you upload are analysed but not saved locally by Claude. If Claude generates a document, you can "download" it to your computer's default downloads folder.</p>
+        <p>Ultimately we hope for Claude to be integrated fully with the P24 Drive, which will make this simpler — but for now, the above applies.</p>
+
+        <p class="policy-date">Last updated: 29 April 2026 — Tom & Lou, Powder24 AI Team</p>
+      </div>
+      <div class="agreement-footer">
+        <div class="signed-badge" id="signedBadge"></div>
+        <label class="agree-check" id="agreeCheck">
+          <input type="checkbox" id="agreeBox" onchange="toggleSignBtn()">
+          <span>I have read and understood everything above.</span>
+        </label>
+        <button class="btn-primary" id="signBtn" onclick="signAgreement()" disabled>Confirm ✍️</button>
       </div>
     </div>
   </div>
 
-  <!-- ─────── CHIPS TAB ─────── -->
-  <div class="section" id="tab-chips">
-    <div class="card" style="margin-bottom:20px;">
-      <div class="card-title"><span class="icon">🎰</span> Chips Used This Season</div>
-      <div class="chip-grid">
-        <table class="chip-table" id="chipsTable">
-          <thead>
-            <tr>
-              <th class="player-col">Player</th>
-              <th>Wildcard 1</th>
-              <th>Bench Boost 1</th>
-              <th>Triple Cap 1</th>
-              <th>Free Hit 1</th>
-              <th class="chip-divider"></th>
-              <th class="chip-second-header">Wildcard 2</th>
-              <th class="chip-second-header">Bench Boost 2</th>
-              <th class="chip-second-header">Triple Cap 2</th>
-              <th class="chip-second-header">Free Hit 2</th>
-            </tr>
-          </thead>
-          <tbody id="chipsTbody"></tbody>
-        </table>
+  <!-- == DATA UPLOAD CHECKLIST TAB == -->
+  <div class="tab-content" id="tab-checklist">
+    <div class="tab-page">
+      <div class="page-header">
+        <h2>Data Upload Checklist</h2>
+        <div class="grad-line"></div>
+        <p>Before uploading anything to Claude, run through this checklist. This applies to any AI tool, but for the purpose of this communication, we are concentrating on Claude.</p>
       </div>
-      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;font-size:11px;align-items:center;">
-        <span><span class="chip-used chip-wc1">WC</span> Wildcard</span>
-        <span><span class="chip-used chip-bb">BB</span> Bench Boost</span>
-        <span><span class="chip-used chip-tc">TC</span> Triple Captain</span>
-        <span><span class="chip-used chip-fh">FH</span> Free Hit</span>
-        <span style="color:var(--teal);font-weight:600;">│ Second chips (extra, given by FPL)</span>
-        <span style="color:var(--muted)">· GW number shown inside each chip</span>
-      </div>
-    </div>
+      <div class="agreement-doc">
+        <h3>Before uploading anything to Claude…</h3>
+        <p>Alongside the general company AI usage policy, please use this checklist before uploading any data or documents to Claude:</p>
 
-    <!-- Chip Danger Zone -->
-    <div class="card">
-      <div class="card-title"><span class="icon">⚠️</span> Chips Still Available (GW 32–38)</div>
-      <div class="danger-zone" id="dangerZone"></div>
-      <p style="margin-top:14px;font-size:11px;color:var(--muted);">Based on FPL API chip records. If a player has chips remaining, now is the time to use them!</p>
-    </div>
-  </div>
-
-  <!-- ─────── REPORTS TAB ─────── -->
-  <div class="section" id="tab-reports">
-    <div id="latestReport"></div>
-    <div class="report-archive">
-      <div class="section-heading">📚 Previous Reports</div>
-      <div id="archiveReports"></div>
-    </div>
-  </div>
-
-  <!-- ─────── EXTRAS TAB ─────── -->
-  <div class="section" id="tab-extras">
-
-    <!-- The Needy List -->
-    <div class="needy-banner">
-      <h2>🆘 The Needy List</h2>
-      <div class="needy-list" id="needyList"></div>
-    </div>
-
-    <!-- Most Improved -->
-    <div class="card" style="margin-bottom:20px;">
-      <div class="card-title"><span class="icon">🚀</span> Form Table — Last 5 Gameweeks</div>
-      <div class="table-wrap">
-        <table id="formTable">
-          <thead>
-            <tr id="formHeaderRow"><th>Manager</th><th>GW–</th><th>GW–</th><th>GW–</th><th>GW–</th><th>GW–</th><th>Last 5 Total</th><th>Form</th></tr>
-          </thead>
-          <tbody id="formTbody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Highest Single GW Scores -->
-    <div class="grid-2">
-      <div class="card">
-        <div class="card-title"><span class="icon">🔥</span> Highest Single GW Scores All Season</div>
-        <div class="table-wrap">
-          <table id="highestTable">
-            <thead><tr><th>#</th><th>Manager</th><th>GW</th><th>Points</th></tr></thead>
-            <tbody id="highestTbody"></tbody>
-          </table>
+        <div class="checklist-item">
+          <div class="checklist-q">Does it contain customer personal data (names, emails, booking details, payment info)?</div>
+          <div class="checklist-a governance-note">If yes — do not upload without anonymising first.</div>
         </div>
-      </div>
 
-      <!-- Most Consistent -->
-      <div class="card">
-        <div class="card-title"><span class="icon">📐</span> Most Consistent (Lowest Std Dev)</div>
-        <div class="table-wrap">
-          <table id="consistencyTable">
-            <thead><tr><th>#</th><th>Manager</th><th>Avg</th><th>Std Dev</th></tr></thead>
-            <tbody id="consistencyTbody"></tbody>
-          </table>
+        <div class="checklist-item">
+          <div class="checklist-q">Does it contain commercially sensitive information (pricing strategy, supplier rates, margin data)?</div>
+          <div class="checklist-a governance-note">If yes — please check with TS.</div>
         </div>
+
+        <div class="checklist-item">
+          <div class="checklist-q">Could this information cause damage to the business or a customer if it were exposed?</div>
+          <div class="checklist-a governance-note">If yes — consider whether AI is the right tool for this task, and speak to LJ or TS if unsure.</div>
+        </div>
+
+        <div class="checklist-item">
+          <div class="checklist-q">Does it contain employee personal data?</div>
+          <div class="checklist-a governance-note">If yes — do not upload.</div>
+        </div>
+
+        <p class="governance-note" style="margin-top:24px">If you're not sure whether something falls into the above categories, ask before uploading. The default position should be caution.</p>
+      </div>
+      <div class="agreement-footer">
+        <div class="signed-badge" id="checklistSignedBadge"></div>
+        <label class="agree-check" id="checklistAgreeCheck">
+          <input type="checkbox" id="checklistAgreeBox" onchange="toggleChecklistBtn()">
+          <span>I have read and understood the data upload checklist above.</span>
+        </label>
+        <button class="btn-primary" id="checklistSignBtn" onclick="signChecklist()" disabled>Confirm ✍️</button>
       </div>
     </div>
   </div>
 
-  <!-- ─────── PRIZES TAB ─────── -->
-  <div class="section" id="tab-prizes">
-    <div class="card-title" style="font-size:18px;margin-bottom:20px;">🏅 How The Prize Money Works</div>
-    <div class="prize-grid">
-      <div class="prize-item p1">
-        <div class="prize-emoji">🥇</div>
-        <div>
-          <div class="prize-label">1st Place (End of Season)</div>
-          <div class="prize-amount">£100</div>
-        </div>
+  <!-- == CONNECTORS TAB == -->
+  <div class="tab-content" id="tab-connectors">
+    <div class="tab-page wide">
+      <div class="page-header">
+        <h2>Connector Tracker</h2>
+        <div class="grad-line"></div>
+        <p>Tick the connectors you've used. You can only update your own row — this helps the team see where Claude is being put to work.</p>
       </div>
-      <div class="prize-item p2">
-        <div class="prize-emoji">🥈</div>
-        <div>
-          <div class="prize-label">2nd Place (End of Season)</div>
-          <div class="prize-amount">£75</div>
-        </div>
-      </div>
-      <div class="prize-item p3">
-        <div class="prize-emoji">🥉</div>
-        <div>
-          <div class="prize-label">3rd Place (End of Season)</div>
-          <div class="prize-amount">£50</div>
-        </div>
-      </div>
-      <div class="prize-item p4">
-        <div class="prize-emoji">4️⃣</div>
-        <div>
-          <div class="prize-label">4th Place (End of Season)</div>
-          <div class="prize-amount">£30</div>
-        </div>
-      </div>
-      <div class="prize-item cup">
-        <div class="prize-emoji">🏆</div>
-        <div>
-          <div class="prize-label">Cup Winner</div>
-          <div class="prize-amount">£20</div>
-          <div class="prize-note">+ £10 for Cup Runner-Up</div>
-        </div>
-      </div>
-      <div class="prize-item weekly">
-        <div class="prize-emoji">📅</div>
-        <div>
-          <div class="prize-label">Weekly 1st Place</div>
-          <div class="prize-amount">~£13/week</div>
-          <div class="prize-note">£495 total pool across season</div>
-        </div>
-      </div>
-      <div class="prize-item weekly">
-        <div class="prize-emoji">📅</div>
-        <div>
-          <div class="prize-label">Weekly 2nd Place</div>
-          <div class="prize-amount">~£7/week</div>
-          <div class="prize-note">£266 total pool across season</div>
-        </div>
-      </div>
-      <div class="prize-item highest">
-        <div class="prize-emoji">🎯</div>
-        <div>
-          <div class="prize-label">Highest Single GW Score</div>
-          <div class="prize-amount">£18</div>
-          <div class="prize-note">Awarded at end of season</div>
-        </div>
-      </div>
-    </div>
-    <div class="prize-total">
-      <div class="prize-label" style="font-size:14px;color:var(--muted);margin-bottom:6px;">TOTAL PRIZE POT</div>
-      <div class="big">£1,064</div>
-      <div class="sub">14 managers × £76 entry = £1,064</div>
-    </div>
-  </div>
-
-  <!-- ─────── ADMIN TAB ─────── -->
-  <div class="section" id="tab-admin">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-      <div class="card-title" style="font-size:18px;margin:0;">🔐 Admin Panel — League Activity</div>
-      <button onclick="loadAdminData()" style="padding:8px 18px;background:var(--accent);color:#000;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-size:13px;">↺ Refresh</button>
-    </div>
-
-    <!-- Summary Cards -->
-    <div id="adminSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;"></div>
-
-    <!-- Sessions Table -->
-    <div class="card">
-      <div class="card-title"><span class="icon">📋</span> All Sessions</div>
-      <div class="table-wrap">
-        <table style="width:100%;border-collapse:collapse;">
-          <thead>
-            <tr style="color:var(--muted);font-size:11px;text-transform:uppercase;border-bottom:1px solid var(--border);">
-              <th style="padding:8px;text-align:left;">Player</th>
-              <th style="padding:8px;text-align:left;">Logged In</th>
-              <th style="padding:8px;text-align:right;">Duration</th>
-              <th style="padding:8px;text-align:right;">Clicks</th>
-            </tr>
-          </thead>
-          <tbody id="adminTableBody">
-            <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Per-player Stats -->
-    <div class="card" style="margin-top:16px;">
-      <div class="card-title"><span class="icon">👥</span> Per Player Stats</div>
-      <div class="table-wrap">
-        <table style="width:100%;border-collapse:collapse;">
-          <thead>
-            <tr style="color:var(--muted);font-size:11px;text-transform:uppercase;border-bottom:1px solid var(--border);">
-              <th style="padding:8px;text-align:left;">Player</th>
-              <th style="padding:8px;text-align:right;">Total Logins</th>
-              <th style="padding:8px;text-align:right;">Avg Duration</th>
-              <th style="padding:8px;text-align:right;">Avg Clicks</th>
-            </tr>
-          </thead>
-          <tbody id="adminPlayerBody">
-            <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">Loading...</td></tr>
-          </tbody>
+      <div class="connectors-wrap">
+        <table class="connectors-table" id="connectorsTable">
+          <tbody><tr><td class="loading-state" colspan="20">Loading...</td></tr></tbody>
         </table>
       </div>
     </div>
   </div>
 
-</div><!-- /main -->
+  <!-- == LEARN TAB == -->
+  <div class="tab-content" id="tab-learn">
+    <div class="tab-page">
+      <div class="page-header">
+        <h2>Learn</h2>
+        <div class="grad-line"></div>
+        <p>Complete the two compulsory courses below, then explore further resources at your own pace.</p>
+      </div>
 
-<script>
-// ═══════════════════ DATA ═══════════════════
-
-const PLAYERS = [
-  { nick:'STEER', name:'Tom Steer',         team:"Steer's Strategy",       entry:1631208 },
-  { nick:'BEN',   name:'Ben Tosh',           team:'TeamTosh',               entry:2762029 },
-  { nick:'PGSM',  name:'Philip Green',       team:'Mr 55p',                 entry:251690  },
-  { nick:'SEAN',  name:'Sean Elliott',       team:'Better Now',             entry:618820  },
-  { nick:'BAZ',   name:'Barry Heath',        team:'Beefy Boys',             entry:2906530 },
-  { nick:'CAT',   name:'Richard Catling',    team:"Cat'll do nicely",       entry:4295680 },
-  { nick:'ALEX',  name:'Alexander Roberts',  team:"Oh For Cloughs Sake!",   entry:2013858 },
-  { nick:'ANDREA',name:'Andrea Elliott',     team:'AE United',              entry:5237390 },
-  { nick:'ADAM',  name:'Adam Roberts',       team:'Lee Grant me 3wishes',   entry:2823034 },
-  { nick:'BOBBY', name:'Bobby Roberts',      team:'Lord of the Ings FC',    entry:525582  },
-  { nick:'PASS',  name:'Sam Passmore',       team:'No time United',         entry:4227338 },
-  { nick:'JO',    name:'Jo Steer',           team:'Midnight Owl FC',        entry:9106664 },
-  { nick:'BLEASE',name:'Simon Bleasdale',    team:"Bleasdale's Bandits",    entry:467006  },
-  { nick:'DANNY', name:'Danny Nugent',       team:'Take my money FC',       entry:8223006 }
-];
-
-// GW points per player [GW1...GW34] — net of transfer deductions
-const GW_PTS = {
-  STEER:  [49,54,56,70,46,72,75,67,39,86,60,44,65,66,52,96,65,38,38,40,51,42,36,62,68,68,53,67,81,47,56,58,124,66],
-  BEN:    [55,53,52,54,66,69,73,70,52,82,40,50,66,66,49,82,88,37,50,31,50,44,38,53,71,78,42,67,58,62,57,63,136,5],
-  PGSM:   [62,52,54,75,42,56,76,57,79,82,33,31,40,55,56,57,76,45,40,43,51,44,47,54,83,77,44,50,44,42,77,65,114,41],
-  SEAN:   [60,43,60,67,38,55,67,63,46,86,36,34,24,65,43,70,56,58,50,28,54,42,64,50,67,64,47,77,72,65,47,48,81,51],
-  BAZ:    [64,36,70,59,33,53,52,60,40,65,69,78,39,71,54,74,77,45,38,58,45,38,46,37,64,81,51,47,43,51,39,47,98,36],
-  CAT:    [44,69,54,53,42,45,72,44,36,54,36,49,59,60,60,59,48,46,45,54,63,37,46,45,79,74,47,81,82,35,58,70,68,46],
-  ALEX:   [53,38,46,69,41,67,51,65,44,86,47,57,41,74,40,62,71,52,36,71,54,46,30,59,61,59,39,51,48,42,52,57,71,68],
-  ANDREA: [65,44,33,54,39,52,35,49,58,58,40,47,32,60,65,55,64,48,37,54,50,39,56,44,62,78,41,65,80,60,58,51,86,29],
-  ADAM:   [48,52,58,76,33,26,55,72,51,64,36,38,40,77,54,51,58,48,29,49,62,42,39,45,54,79,43,61,66,52,59,57,91,40],
-  BOBBY:  [43,60,31,71,41,36,41,39,63,76,42,29,31,72,42,80,77,67,42,30,63,27,61,67,68,44,34,68,57,57,58,46,61,41],
-  PASS:   [50,53,63,67,35,60,79,53,48,55,35,39,19,78,45,64,86,42,36,40,52,31,47,42,64,67,34,56,72,43,56,49,93,38],
-  JO:     [49,39,48,74,47,27,36,40,40,80,39,32,27,52,79,70,74,49,42,41,42,35,38,83,67,51,48,64,55,64,49,52,80,48],
-  BLEASE: [62,48,34,48,40,35,74,93,40,71,46,33,30,43,42,53,85,49,39,68,79,26,41,69,53,60,28,62,39,34,56,56,81,50],
-  DANNY:  [49,66,49,42,27,40,77,73,73,63,39,26,40,59,44,44,98,41,24,36,55,47,49,62,67,51,32,50,46,49,60,31,76,60]
-};
-
-// FPL standings after GW34 (press Live Refresh to update)
-let STANDINGS = [
-  {rank:1, lastRank:1, name:'Tom Steer',       nick:'STEER', team:"Steer's Strategy",      total:2057,gwPts:66, entry:1631208},
-  {rank:2, lastRank:1, name:'Ben Tosh',        nick:'BEN',   team:'TeamTosh',              total:2009,gwPts:5,  entry:2762029},
-  {rank:3, lastRank:3, name:'Philip Green',    nick:'PGSM',  team:'Mr 55p',                total:1944,gwPts:41, entry:251690 },
-  {rank:4, lastRank:5, name:'Sean Elliott',    nick:'SEAN',  team:'Better Now',            total:1878,gwPts:51, entry:618820 },
-  {rank:5, lastRank:5, name:'Richard Catling', nick:'CAT',   team:"Cat'll do nicely",      total:1860,gwPts:46, entry:4295680},
-  {rank:6, lastRank:4, name:'Barry Heath',     nick:'BAZ',   team:'Beefy Boys',            total:1858,gwPts:36, entry:2906530},
-  {rank:7, lastRank:7, name:'Alex Roberts',    nick:'ALEX',  team:"Oh For Cloughs Sake!",  total:1848,gwPts:68, entry:2013858},
-  {rank:8, lastRank:8, name:'Adam Roberts',    nick:'ADAM',  team:'Lee Grant me 3wishes',  total:1805,gwPts:40, entry:2823034},
-  {rank:9, lastRank:10,name:'Sam Passmore',    nick:'PASS',  team:'No time United',        total:1791,gwPts:38, entry:4227338},
-  {rank:10,lastRank:9, name:'Andrea Elliott',  nick:'ANDREA',team:'AE United',             total:1788,gwPts:29, entry:5237390},
-  {rank:11,lastRank:11,name:'Simon Bleasdale', nick:'BLEASE',team:"Bleasdale's Bandits",   total:1767,gwPts:50, entry:467006 },
-  {rank:12,lastRank:12,name:'Bobby Roberts',   nick:'BOBBY', team:'Lord of the Ings FC',   total:1765,gwPts:41, entry:525582 },
-  {rank:13,lastRank:13,name:'Jo Steer',        nick:'JO',    team:'Midnight Owl FC',       total:1761,gwPts:48, entry:9106664},
-  {rank:14,lastRank:14,name:'Danny Nugent',    nick:'DANNY', team:'Take my money FC',      total:1745,gwPts:60, entry:8223006}
-];
-
-// Money data — winnings (£13 for 1st, £7 for 2nd) | losses = times finishing bottom
-const MONEY = {
-  STEER:  { winnings:81,   losses:0 },  // 74 + 7 (GW34 2nd)
-  CAT:    { winnings:62.5, losses:3 },
-  SEAN:   { winnings:57,   losses:1 },
-  BEN:    { winnings:57,   losses:2 },  // last in GW34
-  DANNY:  { winnings:54,   losses:7 },
-  BAZ:    { winnings:53,   losses:2 },
-  PGSM:   { winnings:53,   losses:2 },
-  BLEASE: { winnings:47,   losses:6 },
-  ALEX:   { winnings:60,   losses:3 },  // 47 + 13 (GW34 1st)
-  JO:     { winnings:40,   losses:1 },
-  PASS:   { winnings:33,   losses:1 },
-  BOBBY:  { winnings:23.5, losses:4 },
-  ADAM:   { winnings:20,   losses:1 },
-  ANDREA: { winnings:20,   losses:3 }   // last in GW34
-};
-
-// Chips — wc1/bb1/tc1/fh1 = standard chips | wc2/bb2/tc2/fh2 = extra chips (given by FPL this season)
-// null = not yet used. Values = GW number when played.
-const CHIPS = {
-  STEER:  { wc1:16, bb1:11, tc1:6,  fh1:13, wc2:32,   bb2:33,   tc2:null, fh2:34   },
-  BEN:    { wc1:6,  bb1:5,  tc1:17, fh1:13, wc2:32,   bb2:33,   tc2:26,   fh2:null },
-  PGSM:   { wc1:3,  bb1:19, tc1:13, fh1:4,  wc2:22,   bb2:null, tc2:33,   fh2:31   },
-  SEAN:   { wc1:4,  bb1:19, tc1:18, fh1:null,wc2:25,  bb2:null, tc2:26,   fh2:33   },
-  BAZ:    { wc1:10, bb1:16, tc1:18, fh1:19, wc2:null, bb2:27,   tc2:null, fh2:33   },
-  CAT:    { wc1:19, bb1:null,tc1:18,fh1:null,wc2:34,  bb2:null, tc2:33,   fh2:31   },
-  ALEX:   { wc1:8,  bb1:13, tc1:6,  fh1:18, wc2:32,   bb2:33,   tc2:null, fh2:34   },
-  ANDREA: { wc1:null,bb1:15,tc1:18, fh1:null,wc2:null, bb2:null, tc2:33,   fh2:26   },
-  ADAM:   { wc1:8,  bb1:18, tc1:17, fh1:19, wc2:25,   bb2:null, tc2:33,   fh2:31   },
-  BOBBY:  { wc1:11, bb1:null,tc1:13,fh1:14, wc2:31,   bb2:null, tc2:null, fh2:34   },
-  PASS:   { wc1:6,  bb1:12, tc1:19, fh1:null,wc2:null, bb2:33,   tc2:null, fh2:34   },
-  JO:     { wc1:9,  bb1:4,  tc1:17, fh1:18, wc2:32,   bb2:null, tc2:null, fh2:34   },
-  BLEASE: { wc1:19, bb1:null,tc1:18,fh1:null,wc2:32,  bb2:null, tc2:null, fh2:null },
-  DANNY:  { wc1:5,  bb1:null,tc1:18,fh1:19, wc2:null, bb2:null, tc2:null, fh2:31   }
-};
-
-// The Needy List
-const NEEDY = [
-  { nick:'PASS',   name:'Sam Passmore', team:'No time United'  },
-  { nick:'SEAN',   name:'Sean Elliott', team:'Better Now'      },
-  { nick:'PGSM',   name:'Philip Green', team:'Mr 55p'          }
-];
-
-// Weekly Reports (editable — add new weeks here!)
-const REPORTS = [
-  { gw:34, winner:'Alex Roberts', winnerPts:68, runnerUp:'Tom Steer', runnerUpPts:66,
-    loser:'Andrea Elliott', loserPts:29, avg:46.7, chips:'FH — Steer, Alex, Pass, Bobby & Jo | WC — Cat',
-    mention:"Steer takes sole lead at the top as Tosh gets just 5 pts on his Free Hit — a disaster week for Ben.",
-    fact:'Ben\'s 5 pts is the lowest single GW score of the season.' },
-  { gw:33, winner:'Ben Tosh', winnerPts:136, runnerUp:'Tom Steer', runnerUpPts:124,
-    loser:'Bobby Roberts', loserPts:61, avg:89.2, chips:'BB — Tosh, Steer, Sam & Alex | TC — Phil, Adam, Andrea & Cat | FH — Baz & Sean',
-    mention:'Massive chip week! Tosh tops with 136 on his Bench Boost. Steer & Tosh now level on 2004 pts at the top.',
-    fact:'10 out of 14 players used a chip this week — the most in a single gameweek all season.' },
-  { gw:32, winner:'Richard Catling', winnerPts:70, runnerUp:'Philip Green', runnerUpPts:65,
-    loser:'Danny Nugent', loserPts:31, avg:55.4, chips:'Wildcard — Steer, Tosh, Alex, Simon & Jo',
-    mention:'CAT wins his second GW in a row with 70 pts. Tosh sneaks ahead of Steer at the top by just 1 point!',
-    fact:'5 wildcards played in one week — biggest chip day of the season.' },
-  { gw:31, winner:'Philip Green', winnerPts:77, runnerUp:'Danny Nugent', runnerUpPts:60,
-    loser:'Barry Heath', loserPts:39, avg:55.9, chips:'FH — Adam, Blease, Bobby, Cat, Danny & Phil',
-    mention:'Tightest week of the season — 8 people getting between 56–59 pts.',
-    fact:'Danny holds the season high of 98 pts from GW17.' },
-  { gw:30, winner:'Sean Elliott', winnerPts:65, runnerUp:'Jo Steer', runnerUpPts:64,
-    loser:'Simon Bleasdale', loserPts:34, avg:50.5, chips:'None',
-    mention:'All the women climbing several places: Andrea, Jo & Sean.',
-    fact:null },
-  { gw:29, winner:'Cat Ling', winnerPts:82, runnerUp:'Tom Steer', runnerUpPts:81,
-    loser:'Simon Bleasdale', loserPts:39, avg:60.4, chips:'None',
-    mention:'Andrea with 80 pts and climbing 3 places.',
-    fact:null },
-  { gw:28, winner:'Cat Ling', winnerPts:81, runnerUp:'Sean Elliott', runnerUpPts:77,
-    loser:'Danny Nugent', loserPts:50, avg:61.9, chips:'None',
-    mention:'Anyone lucking out with their vice captain choices.',
-    fact:null },
-  { gw:27, winner:'Tom Steer', winnerPts:53, runnerUp:'Barry Heath', runnerUpPts:51,
-    loser:'Simon Bleasdale', loserPts:24, avg:41.6, chips:'BB — Baz',
-    mention:"I'll take the win with £6.5m in the bank.",
-    fact:'Ben with 28 pts on the bench.' },
-  { gw:26, winner:'Barry Heath', winnerPts:81, runnerUp:'Adam Roberts', runnerUpPts:79,
-    loser:'Bobby Roberts', loserPts:44, avg:67.5, chips:'TC — Ben & Sean, FH — Andrea',
-    mention:"Ben & Sean's Gabriel Triple Captain.",
-    fact:null },
-  { gw:25, winner:'Philip Green', winnerPts:83, runnerUp:'Cat Ling', runnerUpPts:79,
-    loser:'Simon Bleasdale', loserPts:53, avg:66.3, chips:'WC — Sean & Adam',
-    mention:"Phil's Palmer captaincy.",
-    fact:"I'm regretting adding the fun fact one in..." },
-  { gw:24, winner:'Jo Steer', winnerPts:83, runnerUp:'Simon Bleasdale', runnerUpPts:69,
-    loser:'Barry Heath', loserPts:37, avg:51.9, chips:'None',
-    mention:'Andrea for getting 0 from her two captain choices.',
-    fact:'Lowest ever FPL score was Bednarek in 2021 — minus 7. Red card, own goal and conceded 9 goals as a defender. One person triple captained him.' },
-  { gw:23, winner:'Sean Elliott', winnerPts:64, runnerUp:'Bobby Roberts', runnerUpPts:61,
-    loser:'Alex Roberts', loserPts:30, avg:45.6, chips:'None',
-    mention:'Sean "all grief, no thanks" Elliott.',
-    fact:'Oxford University is older than the Aztec Empire.' },
-  { gw:22, winner:'Danny Nugent', winnerPts:51, runnerUp:'Alex Roberts', runnerUpPts:46,
-    loser:'Simon Bleasdale', loserPts:26, avg:38.9, chips:'WC — Phil',
-    mention:'Blease with 22 pts on the bench.',
-    fact:'Danny has lost most weeks (5) and won the joint most money so far (£47).' },
-  { gw:21, winner:'Simon Bleasdale', winnerPts:79, runnerUp:'Bobby Roberts & Cat Ling', runnerUpPts:63,
-    loser:'Jo Steer', loserPts:42, avg:55.1, chips:'None',
-    mention:'Phil for slipping down to 5th.',
-    fact:null },
-  { gw:20, winner:'Alex Roberts', winnerPts:71, runnerUp:'Simon Bleasdale', runnerUpPts:68,
-    loser:'Sean Elliott', loserPts:28, avg:45.9, chips:'None',
-    mention:'Adam with 22 pts on his bench.',
-    fact:'We have more compute power in a smartphone than NASA had for the Moon landing.' },
-  { gw:19, winner:'Ben Tosh & Sean Elliott', winnerPts:50, runnerUp:'—', runnerUpPts:0,
-    loser:'Danny Nugent', loserPts:24, avg:36.6, chips:'TC — Passmore, BB — Sean & Phil, FH — Danny, Adam & Baz, WC — Cat & Blease',
-    mention:"Danny nearly had more points on his bench than his team — despite not needing a bench.",
-    fact:"8 people didn't use all their chips in the first half of the season." },
-  { gw:18, winner:'Bobby Roberts', winnerPts:67, runnerUp:'Sean Elliott', runnerUpPts:58,
-    loser:'Ben Tosh', loserPts:37, avg:47.5, chips:'TC — Baz, Sean, Cat, Andrea & Blease, BB — Adam, FH — Jo',
-    mention:'Top 2 losing the week.',
-    fact:'Vinnie Jones was once booked after 3 seconds — still the fastest yellow card in football history.' },
-  { gw:17, winner:'Danny Nugent', winnerPts:98, runnerUp:'Ben Tosh', runnerUpPts:88,
-    loser:'Cat Ling', loserPts:44, avg:73.0, chips:'TC — Ben, Adam & Jo',
-    mention:"Danny's 98 pts with no chip — a new season high.",
-    fact:"To visit every child's home in one night, Santa would need to travel at 2,340,000 mph — visiting 822 homes per second." },
-  { gw:16, winner:'Tom Steer', winnerPts:96, runnerUp:'Ben Tosh', runnerUpPts:82,
-    loser:'Danny Nugent', loserPts:44, avg:65.5, chips:'BB — Baz, WC — Steer',
-    mention:"Danny's rogue captain choice getting him nil points.",
-    fact:'Wombats are the only animals in the world that produce cube-shaped feces.' },
-  { gw:15, winner:'Jo Steer', winnerPts:79, runnerUp:'Andrea Elliott', runnerUpPts:65,
-    loser:'Alex Roberts', loserPts:40, avg:51.8, chips:'BB — Andrea',
-    mention:'Jo bought Fernandes and Drewsbury-Hall and confidently stated she was going to win.',
-    fact:'In Switzerland it is illegal to own just one guinea pig — keeping one alone is considered animal abuse.' },
-  { gw:14, winner:'Nick Passmore', winnerPts:78, runnerUp:'Adam Roberts', runnerUpPts:77,
-    loser:'Simon Bleasdale', loserPts:43, avg:64.1, chips:'FH — Bobby',
-    mention:'Catling holding strong as the only player without Haaland.',
-    fact:'Australia is wider than the Moon.' },
-  { gw:13, winner:'Ben Tosh', winnerPts:66, runnerUp:'Tom Steer', runnerUpPts:65,
-    loser:'Nick Passmore', loserPts:23, avg:39.8, chips:'BB — Alex, TC — Phil & Bobby, FH — Steer & Tosh',
-    mention:"Alex outdoing Passmore's Bench Boost and getting an impressive -1.",
-    fact:'Baz winning the money stakes with £46.' },
-  { gw:12, winner:'Barry Heath', winnerPts:78, runnerUp:'Alex Roberts', runnerUpPts:57,
-    loser:'Danny Nugent', loserPts:26, avg:41.9, chips:'BB — Passmore',
-    mention:'Passmore with a whopping 2 pts from his Bench Boost.',
-    fact:'Danny leading the losers chart with 3.' },
-  { gw:11, winner:'Barry Heath', winnerPts:69, runnerUp:'Tom Steer', runnerUpPts:60,
-    loser:'Philip Green', loserPts:33, avg:42.7, chips:'WC — Bobby, BB — Steer',
-    mention:'Phil saves Catling from a hat-trick of losses.',
-    fact:null },
-  { gw:10, winner:'Tom Steer, Sean Elliott & Alex Roberts', winnerPts:86, runnerUp:'Ben Tosh', runnerUpPts:82,
-    loser:'Cat Ling', loserPts:54, avg:72.0, chips:'WC — Baz',
-    mention:'Phil also on 86 but dropped 4 and 20 on his bench. Highest average week of the season.',
-    fact:'Andrea, Blease, Bobby & Catling still yet to use a chip.' },
-  { gw:9, winner:'Philip Green', winnerPts:79, runnerUp:'Danny Nugent', runnerUpPts:73,
-    loser:'Cat Ling', loserPts:36, avg:50.6, chips:'WC — Jo',
-    mention:'Nothing springs to mind.',
-    fact:'Danny, Andrea & Bobby all drawing the losers table with 2 each.' },
-  { gw:8, winner:'Simon Bleasdale', winnerPts:93, runnerUp:'Danny Nugent', runnerUpPts:73,
-    loser:'Bobby Roberts', loserPts:39, avg:61.4, chips:'WC — Adam & Alex',
-    mention:"Danny averaged 88% more points in weeks he didn't manage his own team.",
-    fact:'No one has lost yet whose name begins with a letter after D in the alphabet.' },
-  { gw:7, winner:'Nick Passmore', winnerPts:79, runnerUp:'Simon Bleasdale', runnerUpPts:78,
-    loser:'Andrea Elliott', loserPts:35, avg:61.9, chips:'None',
-    mention:'A close 77 in 3rd, 76 in 4th and 75 in 5th.',
-    fact:null },
-  { gw:6, winner:'Tom Steer', winnerPts:72, runnerUp:'Ben Tosh', runnerUpPts:69,
-    loser:'Adam Roberts', loserPts:26, avg:41.6, chips:'WC — Ben & Passmore, TC — Steer & Alex',
-    mention:'Nothing really worth a mention, other than a Haaland TC of course...',
-    fact:null },
-  { gw:5, winner:'Ben Tosh', winnerPts:66, runnerUp:'Jo Steer', runnerUpPts:47,
-    loser:'Danny Nugent', loserPts:44, avg:41.0, chips:'WC — Danny, BB — Ben',
-    mention:'Danny becomes the first person to play their Wildcard and lose the week.',
-    fact:null },
-  { gw:4, winner:'Adam Roberts', winnerPts:76, runnerUp:'Philip Green', runnerUpPts:75,
-    loser:'Danny Nugent', loserPts:42, avg:63.4, chips:'FH — Phil',
-    mention:'Jo with 74 pts or Phil with 35 pts on his bench.',
-    fact:null },
-  { gw:3, winner:'Barry Heath', winnerPts:70, runnerUp:'Nick Passmore', runnerUpPts:63,
-    loser:'Andrea Elliott', loserPts:33, avg:51.1, chips:'WC — Phil',
-    mention:'Grimsby Town.',
-    fact:null },
-  { gw:2, winner:'Cat Ling', winnerPts:69, runnerUp:'Danny Nugent', runnerUpPts:66,
-    loser:'Alex Roberts', loserPts:38, avg:50.5, chips:'None',
-    mention:'Catling with 24 points from one player off his bench; Danny nearly surpassed his winnings from last year.',
-    fact:null },
-  { gw:1, winner:'Andrea Elliott', winnerPts:65, runnerUp:'Barry Heath', runnerUpPts:64,
-    loser:'Bobby Roberts', loserPts:43, avg:53.8, chips:'None',
-    mention:'Passmore with 3 defenders out already.',
-    fact:'Bitcoin update: I give up. HF$P' }
-];
-
-// ═══════════════════ HELPERS ═══════════════════
-
-function playerByNick(nick) { return PLAYERS.find(p => p.nick === nick); }
-
-function calcRunningTotals(pts) {
-  let t=0; return pts.map(p => (t+=p, t));
-}
-
-function rankChangeHTML(curr, last) {
-  const diff = last - curr;
-  if (diff > 0) return `<span class="rank-change up">▲ ${diff}</span>`;
-  if (diff < 0) return `<span class="rank-change down">▼ ${Math.abs(diff)}</span>`;
-  return `<span class="rank-change same">—</span>`;
-}
-
-function stdDev(arr) {
-  const avg = arr.reduce((a,b)=>a+b,0)/arr.length;
-  const sq = arr.map(x=>(x-avg)**2);
-  return Math.sqrt(sq.reduce((a,b)=>a+b,0)/arr.length).toFixed(1);
-}
-
-// ═══════════════════ RENDER STANDINGS ═══════════════════
-
-function renderStandings() {
-  const leader = STANDINGS[0].total;
-  const tbody = document.getElementById('standingsTbody');
-  tbody.innerHTML = STANDINGS.map((p,i) => {
-    const isMe = CURRENT_USER && p.nick === CURRENT_USER;
-    const rowClass = [i===0?'rank-top':i===STANDINGS.length-1?'rank-bottom':'', isMe?'current-user-row':''].filter(Boolean).join(' ');
-    const gap = i === 0 ? '—' : `−${leader - p.total}`;
-    return `<tr class="${rowClass}">
-      <td class="rank rank-${p.rank}">${p.rank}</td>
-      <td><div class="player-name">${p.name}</div><div class="team-name">${p.team}</div></td>
-      <td class="gw-pts">${p.gwPts} pts</td>
-      <td class="pts-big">${p.total.toLocaleString()}</td>
-      <td style="color:var(--muted);font-size:13px;">${gap}</td>
-      <td>${rankChangeHTML(p.rank, p.lastRank)}</td>
-    </tr>`;
-  }).join('');
-}
-
-// ═══════════════════ RENDER STATS ═══════════════════
-
-function renderStats() {
-  const gws = Object.keys(GW_PTS.STEER).length;
-  const allPts = Object.values(GW_PTS).flat();
-  const highest = Math.max(...allPts);
-  const highestPlayer = Object.entries(GW_PTS).find(([,v])=>v.includes(highest))?.[0];
-  const highGW = GW_PTS[highestPlayer]?.indexOf(highest)+1;
-
-  // Overall average
-  const gwAvgs = Array.from({length:gws},(_,i)=>
-    Object.values(GW_PTS).map(p=>p[i]).reduce((a,b)=>a+b,0)/14
-  );
-  const seasonAvg = (gwAvgs.reduce((a,b)=>a+b,0)/gwAvgs.length).toFixed(1);
-
-  // Leader gap
-  const gap = STANDINGS[0].total - STANDINGS[1].total;
-
-  document.getElementById('statGrid').innerHTML = `
-    <div class="stat-card gold">
-      <div class="label">League Leader</div>
-      <div class="value">${STANDINGS[0].total.toLocaleString()}</div>
-      <div class="sub">${STANDINGS[0].name} · ${STANDINGS[0].team}</div>
-    </div>
-    <div class="stat-card green">
-      <div class="label">Season High Score</div>
-      <div class="value">${highest}</div>
-      <div class="sub">${playerByNick(highestPlayer)?.name} · GW${highGW}</div>
-    </div>
-    <div class="stat-card blue">
-      <div class="label">Season Avg Score</div>
-      <div class="value">${seasonAvg}</div>
-      <div class="sub">Per manager per gameweek</div>
-    </div>
-    <div class="stat-card red">
-      <div class="label">Leader's Gap</div>
-      <div class="value">+${gap}</div>
-      <div class="sub">Ahead of ${STANDINGS[1].name}</div>
-    </div>
-  `;
-}
-
-// ═══════════════════ TRAJECTORY CHART ═══════════════════
-
-let trajectoryChart;
-function renderTrajectory() {
-  const gws = Object.keys(GW_PTS.STEER).length;
-  const labels = Array.from({length:gws},(_,i)=>`GW${i+1}`);
-
-  const COLORS = [
-    '#ffd700','#00e676','#40a9ff','#ff5252','#ff9800','#e040fb',
-    '#00bcd4','#8bc34a','#f06292','#4fc3f7','#ffb74d','#aed581','#ba68c8','#ef9a9a'
-  ];
-
-  const datasets = PLAYERS.map((p,i) => ({
-    label: p.nick,
-    data: calcRunningTotals(GW_PTS[p.nick]),
-    borderColor: COLORS[i],
-    backgroundColor: COLORS[i]+'22',
-    borderWidth: CURRENT_USER && p.nick===CURRENT_USER ? 3 : 1.5,
-    pointRadius: 2,
-    tension: 0.3,
-    hidden: CURRENT_USER ? p.nick !== CURRENT_USER : false
-  }));
-
-  const ctx = document.getElementById('trajectoryChart').getContext('2d');
-  if (trajectoryChart) trajectoryChart.destroy();
-  trajectoryChart = new Chart(ctx, {
-    type:'line',
-    data:{ labels, datasets },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{ position:'right', labels:{ color:'#7a8fa8', font:{size:11}, boxWidth:12, padding:8 }},
-        tooltip:{ mode:'index', intersect:false, backgroundColor:'#1b2838', titleColor:'#e8edf3', bodyColor:'#7a8fa8' }
-      },
-      scales:{
-        x:{ grid:{ color:'#2c3e5044' }, ticks:{ color:'#7a8fa8', font:{size:10} } },
-        y:{ grid:{ color:'#2c3e5044' }, ticks:{ color:'#7a8fa8', font:{size:10} } }
-      },
-      interaction:{ mode:'nearest', axis:'x', intersect:false }
-    }
-  });
-}
-
-// ═══════════════════ WEEKLY WINNERS ═══════════════════
-
-let CURRENT_USER = null;
-
-function renderWeeklyWinners() {
-  const gws = GW_PTS.STEER.length;
-  const container = document.getElementById('weeklyWinners');
-  container.innerHTML = '';
-
-  if (!CURRENT_USER) {
-    container.innerHTML = '<p style="color:var(--muted);font-size:12px;padding:8px 0;">Select your name (top-left 👤 button) to see your personal week-by-week record.</p>';
-    return;
-  }
-
-  const userPts = GW_PTS[CURRENT_USER];
-  if (!userPts) return;
-
-  for (let g=0; g<gws; g++) {
-    const scores = PLAYERS.map(p=>({nick:p.nick,pts:GW_PTS[p.nick][g]}));
-    scores.sort((a,b)=>b.pts-a.pts);
-    const winner = scores[0];
-    const loser = scores[scores.length-1];
-    let cls = 'mid';
-    if (winner.nick===CURRENT_USER) cls='won';
-    else if (loser.nick===CURRENT_USER) cls='lost';
-    const div = document.createElement('div');
-    div.className=`streak-gw ${cls}`;
-    div.title=`GW${g+1}: ${winner.nick} won (${winner.pts}pts) · ${loser.nick} lost (${loser.pts}pts) · You: ${userPts[g]}pts`;
-    div.textContent=g+1;
-    container.appendChild(div);
-  }
-}
-
-// ═══════════════════ AVG CHART ═══════════════════
-
-let avgChart;
-function renderAvgChart() {
-  const gws = GW_PTS.STEER.length;
-  const labels = Array.from({length:gws},(_,i)=>`GW${i+1}`);
-  const avgs = Array.from({length:gws},(_,i)=>
-    (Object.values(GW_PTS).map(p=>p[i]).reduce((a,b)=>a+b,0)/14).toFixed(1)
-  );
-  const ctx = document.getElementById('avgChart').getContext('2d');
-  if (avgChart) avgChart.destroy();
-  avgChart = new Chart(ctx, {
-    type:'bar',
-    data:{
-      labels,
-      datasets:[{
-        label:'Avg Score',
-        data:avgs,
-        backgroundColor:'rgba(0,230,118,0.3)',
-        borderColor:'#00e676',
-        borderWidth:1
-      }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:false } },
-      scales:{
-        x:{ grid:{color:'#2c3e5044'}, ticks:{color:'#7a8fa8',font:{size:9}} },
-        y:{ grid:{color:'#2c3e5044'}, ticks:{color:'#7a8fa8',font:{size:9}} }
-      }
-    }
-  });
-}
-
-// ═══════════════════ MONEY TABLE ═══════════════════
-
-function renderMoney() {
-  const sorted = Object.entries(MONEY).sort((a,b)=>b[1].winnings-a[1].winnings);
-  const tbody = document.getElementById('moneyTbody');
-  tbody.innerHTML = sorted.map(([nick,d],i) => {
-    const p = playerByNick(nick);
-    const isMe = CURRENT_USER && nick === CURRENT_USER;
-    return `<tr class="${isMe?'current-user-row':''}">
-      <td class="rank rank-${i+1}">${i+1}</td>
-      <td><div class="player-name">${p?.name||nick}</div></td>
-      <td><div class="team-name">${p?.team||''}</div></td>
-      <td class="money">£${d.winnings.toFixed(2)}</td>
-    </tr>`;
-  }).join('');
-
-  // Loser table — sorted by most losses DESC, then least losses at bottom
-  const sortedL = Object.entries(MONEY).sort((a,b)=>b[1].losses-a[1].losses);
-  const tbodyL = document.getElementById('loserTbody');
-  tbodyL.innerHTML = sortedL.map(([nick,d],i) => {
-    const p = playerByNick(nick);
-    const isMe = CURRENT_USER && nick === CURRENT_USER;
-    const lossClass = d.losses===0?'zero-losses':'losses-val';
-    return `<tr class="${isMe?'current-user-row':''}">
-      <td class="rank">${i+1}</td>
-      <td><div class="player-name">${p?.name||nick}</div></td>
-      <td><div class="team-name">${p?.team||''}</div></td>
-      <td class="${lossClass}">${d.losses===0?'🏆 Zero!':d.losses+'× bottom'}</td>
-    </tr>`;
-  }).join('');
-}
-
-// ═══════════════════ CHIPS TABLE ═══════════════════
-
-function renderChips() {
-  const cell1 = (gw, cls, label) => gw
-    ? `<td><span class="chip-used ${cls}">${label} ${gw}</span></td>`
-    : `<td><span class="chip-avail badge badge-green">✓</span></td>`;
-  const cell2 = (gw, cls, label) => gw
-    ? `<td><span class="chip-used ${cls}">${label} ${gw}</span></td>`
-    : `<td><span class="chip-avail" style="color:var(--border);">—</span></td>`;
-  const div = `<td class="chip-divider"></td>`;
-
-  const tbody = document.getElementById('chipsTbody');
-  tbody.innerHTML = PLAYERS.map(p => {
-    const c = CHIPS[p.nick] || {};
-    const isMe = CURRENT_USER && p.nick === CURRENT_USER;
-    return `<tr class="${isMe?'current-user-row':''}">
-      <td class="player-col" style="${isMe?'color:var(--accent);font-weight:700;':''}">${p.nick}</td>
-      ${cell1(c.wc1,'chip-wc1','WC')}
-      ${cell1(c.bb1,'chip-bb','BB')}
-      ${cell1(c.tc1,'chip-tc','TC')}
-      ${cell1(c.fh1,'chip-fh','FH')}
-      ${div}
-      ${cell2(c.wc2,'chip-wc2','WC')}
-      ${cell2(c.bb2,'chip-bb','BB')}
-      ${cell2(c.tc2,'chip-tc','TC')}
-      ${cell2(c.fh2,'chip-fh2','FH')}
-    </tr>`;
-  }).join('');
-
-  // Danger zone — chips still available
-  const dz = document.getElementById('dangerZone');
-  dz.innerHTML = PLAYERS.map(p => {
-    const c = CHIPS[p.nick]||{};
-    const remaining = [];
-    if(!c.wc1) remaining.push(`<span class="chip-used chip-wc1">WC</span>`);
-    if(!c.bb1) remaining.push(`<span class="chip-used chip-bb">BB</span>`);
-    if(!c.tc1) remaining.push(`<span class="chip-used chip-tc">TC</span>`);
-    if(!c.fh1) remaining.push(`<span class="chip-used chip-fh">FH</span>`);
-    if(!c.wc2) remaining.push(`<span class="chip-used chip-wc2" style="opacity:0.7;">WC2</span>`);
-    if(!c.bb2) remaining.push(`<span class="chip-used chip-bb" style="opacity:0.7;">BB2</span>`);
-    if(!c.tc2) remaining.push(`<span class="chip-used chip-tc" style="opacity:0.7;">TC2</span>`);
-    if(!c.fh2) remaining.push(`<span class="chip-used chip-fh2" style="opacity:0.7;">FH2</span>`);
-    const hasChips = remaining.length > 0;
-    return `<div class="danger-player ${hasChips?'has-chips':'no-chips'}">
-      <div class="dp-name">${p.nick}</div>
-      <div class="dp-chips">${remaining.length?remaining.join(''):'<span style="color:var(--muted);font-size:11px;">All used ✓</span>'}</div>
-    </div>`;
-  }).join('');
-}
-
-// ═══════════════════ REPORTS ═══════════════════
-
-function renderReports() {
-  const latest = REPORTS[0];
-  document.getElementById('latestReport').innerHTML = `
-    <div class="report-header">
-      <div class="report-gw">⚡ Latest · Gameweek ${latest.gw}</div>
-      <div class="report-winner">Week Winner: ${latest.winner} — ${latest.winnerPts} pts 🏆</div>
-      <div class="report-grid">
-        <div class="report-item">
-          <div class="rlabel">🥇 Winner</div>
-          <div class="rvalue winner-val">${latest.winner} (${latest.winnerPts})</div>
-        </div>
-        <div class="report-item">
-          <div class="rlabel">🥈 Runner Up</div>
-          <div class="rvalue">${latest.runnerUp} (${latest.runnerUpPts})</div>
-        </div>
-        <div class="report-item">
-          <div class="rlabel">💀 Loser</div>
-          <div class="rvalue loser-val">${latest.loser} (${latest.loserPts})</div>
-        </div>
-        <div class="report-item">
-          <div class="rlabel">📊 Avg Score</div>
-          <div class="rvalue">${latest.avg} pts</div>
-        </div>
-        <div class="report-item">
-          <div class="rlabel">🎰 Chips Used</div>
-          <div class="rvalue" style="font-size:12px;">${latest.chips}</div>
+      <div class="compulsory-courses">
+        <div class="compulsory-label">Compulsory courses — start here</div>
+        <div class="compulsory-grid">
+          <a href="https://anthropic.skilljar.com/claude-101" target="_blank" class="compulsory-card">
+            <div class="compulsory-badge">🎓 Required</div>
+            <h3>Claude 101</h3>
+            <p>Foundational knowledge — covers what Claude is, its features, and how to use it well. We recommend watching the <strong>Getting Started with Claude AI</strong> tutorial (5 mins) before beginning.</p>
+            <div class="compulsory-meta">⏱ ~3 hours · Free · Certificate</div>
+            <div class="compulsory-cta">Start Course ↗</div>
+          </a>
+          <a href="https://anthropic.skilljar.com/introduction-to-claude-cowork" target="_blank" class="compulsory-card">
+            <div class="compulsory-badge">🎓 Required</div>
+            <h3>Introduction to Claude Cowork</h3>
+            <p>Take your usage up a notch — covers specific use cases, plug-ins, and agentic automation. Do this once Claude 101 feels comfortable.</p>
+            <div class="compulsory-meta">⏱ ~2 hours · Free · Certificate</div>
+            <div class="compulsory-cta">Start Course ↗</div>
+          </a>
         </div>
       </div>
-      ${latest.mention?`<div class="report-mention">⭐ ${latest.mention}</div>`:''}
-      ${latest.fact?`<div class="report-fact">💡 ${latest.fact}</div>`:''}
-    </div>
-  `;
 
-  const archive = document.getElementById('archiveReports');
-  archive.innerHTML = REPORTS.slice(1).map((r,i) => `
-    <div class="archive-week">
-      <div class="archive-header" onclick="toggleArchive(${i})">
-        <div>
-          <div class="aw-title">Gameweek ${r.gw}</div>
-          <div class="aw-meta">Winner: ${r.winner} (${r.winnerPts}pts) · Loser: ${r.loser} (${r.loserPts}pts)</div>
-        </div>
-        <div class="toggle" id="toggle-${i}">＋</div>
+      <div style="text-align:center; margin-top: 40px;">
+        <a href="https://www.anthropic.com/learn" target="_blank" class="btn-primary" style="display:inline-block; text-decoration:none; padding: 14px 32px; font-size: 15px;">
+          Other Resources ↗
+        </a>
       </div>
-      <div class="archive-body" id="archive-body-${i}">
-        <div class="archive-mini">
-          <div class="am-item"><div class="aml">Winner</div><div class="amv" style="color:var(--accent)">${r.winner} · ${r.winnerPts}pts</div></div>
-          <div class="am-item"><div class="aml">Runner Up</div><div class="amv">${r.runnerUp} · ${r.runnerUpPts}pts</div></div>
-          <div class="am-item"><div class="aml">Loser</div><div class="amv" style="color:var(--red)">${r.loser} · ${r.loserPts}pts</div></div>
-          <div class="am-item"><div class="aml">Avg Score</div><div class="amv">${r.avg}pts</div></div>
-          <div class="am-item"><div class="aml">Chips</div><div class="amv">${r.chips}</div></div>
-        </div>
-        ${r.mention?`<div class="report-mention" style="margin-top:10px;">⭐ ${r.mention}</div>`:''}
-        ${r.fact?`<div class="report-fact" style="margin-top:8px;">💡 ${r.fact}</div>`:''}
+
+      <div class="info-note" style="margin-top: 32px;">
+        💡 <strong>Suggest a resource:</strong> If you find something useful, let Tom or Lou know and they'll add it here.
       </div>
     </div>
-  `).join('');
-}
+  </div>
 
-function toggleArchive(i) {
-  const body = document.getElementById(`archive-body-${i}`);
-  const tog = document.getElementById(`toggle-${i}`);
-  body.classList.toggle('open');
-  tog.textContent = body.classList.contains('open') ? '－' : '＋';
-}
-
-// ═══════════════════ NEEDY LIST ═══════════════════
-
-function renderNeedy() {
-  const emojis = ['😤','😭','🙏'];
-  document.getElementById('needyList').innerHTML = NEEDY.map((n,i)=>`
-    <div class="needy-item">
-      <div class="ni-emoji">${emojis[i]||'😬'}</div>
-      <div class="ni-name">${n.name}</div>
-      <div class="ni-team">${n.team}</div>
+  <!-- == ADMIN TAB == -->
+  <div class="tab-content" id="tab-admin">
+    <div class="tab-page">
+      <div class="page-header">
+        <h2>Admin Dashboard</h2>
+        <div class="grad-line"></div>
+        <p>Usage statistics and team activity — visible to Tom and Lou only.</p>
+      </div>
+      <div class="admin-grid" id="adminStatCards">
+        <div class="loading-state">Loading stats...</div>
+      </div>
+      <div style="text-align:right; margin: 8px 0 24px;">
+        <button class="btn-secondary" onclick="confirmResetStats()" style="font-size:12px; padding:8px 16px; opacity:0.7;">🗑️ Reset login stats</button>
+      </div>
+      <div class="admin-section">
+        <h3>👥 Team Activity</h3>
+        <div class="table-wrap">
+          <table class="admin-table" id="teamTable"></table>
+        </div>
+      </div>
+      <div class="admin-section">
+        <h3>🔌 Connector Adoption</h3>
+        <div class="table-wrap">
+          <table class="admin-table" id="connectorAdoptionTable"></table>
+        </div>
+      </div>
+      <div class="admin-section">
+        <h3>➕ Manage Team Members</h3>
+        <p style="color:var(--white40);font-size:13px;margin-bottom:16px">Add new starters here — they'll appear on the login screen immediately. Default PIN is 23456 (same as everyone else) unless you set a different one.</p>
+        <div class="team-manager-form">
+          <input type="text" id="newMemberName" placeholder="First name" class="admin-input" autocomplete="off">
+          <input type="text" id="newMemberPin" placeholder="PIN (leave blank for 23456)" class="admin-input" maxlength="5" autocomplete="off">
+          <button class="btn-primary" onclick="addTeamMember()" style="white-space:nowrap">Add Member</button>
+        </div>
+        <div id="teamManagerList" style="margin-top:16px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div class="info-note" id="sheetLink"></div>
     </div>
-  `).join('');
-}
+  </div>
 
-// ═══════════════════ FORM TABLE ═══════════════════
+  <footer class="app-footer">
+    <span>Powder24 × Claude AI Hub — internal use only</span>
+    <span id="sessionInfo"></span>
+  </footer>
+</div>
 
-function renderForm() {
-  const lastN = 5;
-  const totalGWs = GW_PTS.STEER.length;
-  const start = totalGWs - lastN;
-  // Update column headers dynamically
-  const headerRow = document.getElementById('formHeaderRow');
-  if (headerRow) {
-    const gwNums = Array.from({length:lastN},(_,i)=>start+i+1);
-    headerRow.innerHTML = `<th>Manager</th>${gwNums.map(g=>`<th>GW${g}</th>`).join('')}<th>Last 5 Total</th><th>Form</th>`;
-  }
-  const rows = PLAYERS.map(p => {
-    const recentPts = GW_PTS[p.nick].slice(start);
-    const total5 = recentPts.reduce((a,b)=>a+b,0);
-    return { p, recentPts, total5 };
-  }).sort((a,b)=>b.total5-a.total5);
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-  const allRecent = PLAYERS.map(p=>GW_PTS[p.nick].slice(start).reduce((a,b)=>a+b,0));
-  const maxForm = Math.max(...allRecent);
-  const minForm = Math.min(...allRecent);
-
-  document.getElementById('formTbody').innerHTML = rows.map(({p,recentPts,total5},i) => {
-    const isHot = total5 === maxForm;
-    const isCold = total5 === minForm;
-    const formEmoji = isHot ? '🔥' : isCold ? '🥶' : total5 > 270 ? '📈' : total5 < 230 ? '📉' : '➡️';
-    const gwPts = recentPts.map(v=>`<td style="color:${v>=60?'var(--accent)':v<=40?'var(--red)':'var(--text)'}">${v}</td>`).join('');
-    return `<tr>
-      <td><div class="player-name">${p.nick}</div><div class="team-name" style="font-size:10px;">${p.name}</div></td>
-      ${gwPts}
-      <td style="font-weight:800;color:${isHot?'var(--accent)':isCold?'var(--red)':'var(--text)'};">${total5}</td>
-      <td>${formEmoji}</td>
-    </tr>`;
-  }).join('');
-}
-
-// ═══════════════════ HIGHEST SCORES ═══════════════════
-
-function renderHighest() {
-  const all = [];
-  PLAYERS.forEach(p => {
-    GW_PTS[p.nick].forEach((pts,i) => {
-      all.push({nick:p.nick, name:p.name, gw:i+1, pts});
-    });
-  });
-  all.sort((a,b)=>b.pts-a.pts);
-  const top10 = all.slice(0,10);
-  document.getElementById('highestTbody').innerHTML = top10.map((e,i)=>`
-    <tr>
-      <td class="rank rank-${i+1}">${i+1}</td>
-      <td><div class="player-name">${e.nick}</div><div class="team-name">${e.name}</div></td>
-      <td class="gw-pts">GW${e.gw}</td>
-      <td style="font-weight:800;color:${i===0?'var(--gold)':'var(--text)'};">${e.pts}</td>
-    </tr>
-  `).join('');
-}
-
-// ═══════════════════ CONSISTENCY ═══════════════════
-
-function renderConsistency() {
-  const rows = PLAYERS.map(p => {
-    const avg = (GW_PTS[p.nick].reduce((a,b)=>a+b,0)/GW_PTS[p.nick].length).toFixed(1);
-    const sd = stdDev(GW_PTS[p.nick]);
-    return {p, avg, sd: parseFloat(sd)};
-  }).sort((a,b)=>a.sd-b.sd);
-
-  document.getElementById('consistencyTbody').innerHTML = rows.map(({p,avg,sd},i)=>`
-    <tr>
-      <td class="rank rank-${i+1}">${i+1}</td>
-      <td><div class="player-name">${p.nick}</div><div class="team-name">${p.name}</div></td>
-      <td>${avg}</td>
-      <td style="color:${sd<15?'var(--accent)':sd>20?'var(--red)':'var(--text)'};">${sd}</td>
-    </tr>
-  `).join('');
-}
-
-// ═══════════════════ WELCOME SCREEN ═══════════════════
-
-function buildWelcomeGrid() {
-  const grid = document.getElementById('welcomeGrid');
-  grid.innerHTML = PLAYERS.map(p => `
-    <div class="welcome-player" onclick="selectUser('${p.nick}')">
-      <div class="wp-nick">${p.nick}</div>
-      <div class="wp-name">${p.name}</div>
-      <div class="wp-team">${p.team}</div>
-    </div>
-  `).join('');
-}
-
-function showWelcome() {
-  document.getElementById('welcomeOverlay').classList.remove('hidden');
-}
-
-// selectUser is defined below in the Supabase section (handles PIN for STEER)
-
-// ═══════════════════ REFRESH (LIVE DATA) ═══════════════════
-
-async function refreshData() {
-  const btn = document.querySelector('.refresh-btn');
-  btn.classList.add('loading');
-  btn.textContent = '↻ Refreshing...';
-
-  const PROXY = 'https://corsproxy.io/?';
-  const API = 'https://fantasy.premierleague.com/api/';
-
-  try {
-    // Try direct first, then proxy
-    let data;
-    try {
-      const r = await fetch(`${API}leagues-classic/46235/standings/`);
-      data = await r.json();
-    } catch {
-      const r = await fetch(`${PROXY}${encodeURIComponent(API+'leagues-classic/46235/standings/')}`);
-      data = await r.json();
-    }
-
-    const results = data.standings?.results || [];
-    if (results.length > 0) {
-      STANDINGS = results.map(r => {
-        const player = PLAYERS.find(p=>p.entry===r.entry);
-        return {
-          rank: r.rank, lastRank: r.last_rank,
-          name: r.player_name, nick: player?.nick || r.player_name,
-          team: r.entry_name, total: r.total, gwPts: r.event_total,
-          entry: r.entry
-        };
-      });
-      STANDINGS.sort((a,b)=>a.rank-b.rank);
-
-      // Refresh GW history for all players — applying transfer deductions
-      for (const p of PLAYERS) {
-        try {
-          const hr = await fetch(`${PROXY}${encodeURIComponent(API+'entry/'+p.entry+'/history/')}`);
-          const hd = await hr.json();
-          if (hd.current && hd.current.length > 0) {
-            // Net score = points - event_transfers_cost (hit deductions already included)
-            GW_PTS[p.nick] = hd.current.map(g => g.points - g.event_transfers_cost);
-          }
-        } catch {}
-      }
-
-      document.getElementById('gwBadge').textContent = `GW ${GW_PTS[PLAYERS[0].nick].length}`;
-      document.getElementById('lastUpdated').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
-      renderStandings();
-      renderTrajectory();
-      renderStats();
-      alert('✅ Data refreshed successfully!');
-    }
-  } catch(e) {
-    alert('⚠️ Could not fetch live data — showing cached standings. Try again later.');
-  }
-
-  btn.classList.remove('loading');
-  btn.innerHTML = '↺ Live Refresh';
-}
-
-// ═══════════════════ TAB NAVIGATION ═══════════════════
-
-function showTab(id, el) {
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-'+id)?.classList.add('active');
-  if(el) el.classList.add('active');
-  if(id === 'admin') loadAdminData();
-}
-
-// ═══════════════════ INIT ═══════════════════
-
-function init() {
-  buildWelcomeGrid();
-  renderStats();
-  renderStandings();
-  renderTrajectory();
-  renderWeeklyWinners();
-  renderAvgChart();
-  renderMoney();
-  renderChips();
-  renderReports();
-  renderNeedy();
-  renderForm();
-  renderHighest();
-  renderConsistency();
-}
-
-document.addEventListener('DOMContentLoaded', init);
-
-// ═══════════════════ SUPABASE & TRACKING ═══════════════════
-
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQG7rbVCHCc7fGXXYIf9105rBUq8_MyI_4jkfFGzDFAISrKVEHtvK0nySHEFRLEpkmnA/exec';
-const ADMIN_PIN  = '39373';
-
-let sessionRowId  = null;
-let sessionClicks = 0;
-let sessionStart  = null;
-
-// Count every click on the page
-document.addEventListener('click', () => {
-  if (!sessionRowId) return;
-  sessionClicks++;
-  // Write to Supabase every 10 clicks so we don't flood it
-  if (sessionClicks % 10 === 0) pushSessionUpdate();
-});
-
-// Save when user leaves or hides the tab
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) pushSessionUpdate(true);
-});
-window.addEventListener('beforeunload', () => pushSessionUpdate(true));
-
-async function gsGet(params) {
-  try {
-    const qs = new URLSearchParams(params).toString();
-    await fetch(SCRIPT_URL + '?' + qs, { redirect: 'follow' });
-  } catch(e) { console.warn('Sheet call failed', e); }
-}
-
-async function startSession(nick) {
-  sessionStart  = new Date();
-  sessionClicks = 0;
-  sessionRowId  = nick + '_' + sessionStart.getTime();
-  gsGet({ action: 'start', id: sessionRowId, nick, time: sessionStart.toISOString() });
-}
-
-async function pushSessionUpdate(final = false) {
-  if (!sessionRowId) return;
-  const secs = Math.round((new Date() - sessionStart) / 1000);
-  gsGet({
-    action: 'update',
-    id: sessionRowId,
-    duration: secs,
-    clicks: sessionClicks,
-    loggedOut: final ? new Date().toISOString() : ''
-  });
-}
-
-// ═══════════════════ PASSWORD PROMPT (STEER only) ═══════════════════
-
-let pendingNick = null;
-
-function checkPin() {
-  const val = document.getElementById('pinInput').value;
-  if (val === ADMIN_PIN) {
-    document.getElementById('passwordOverlay').style.display = 'none';
-    document.getElementById('pinInput').value = '';
-    document.getElementById('pinError').textContent = '';
-    completeLogin(pendingNick);
-  } else {
-    document.getElementById('pinError').textContent = 'Wrong PIN — try again.';
-    document.getElementById('pinInput').value = '';
-  }
-}
-
-function cancelPin() {
-  document.getElementById('passwordOverlay').style.display = 'none';
-  document.getElementById('pinInput').value = '';
-  document.getElementById('pinError').textContent = '';
-  document.getElementById('welcomeOverlay').classList.remove('hidden');
-}
-
-// ═══════════════════ UPDATED selectUser ═══════════════════
-
-function selectUser(nick) {
-  if (nick === 'STEER') {
-    pendingNick = nick;
-    document.getElementById('welcomeOverlay').classList.add('hidden');
-    document.getElementById('passwordOverlay').style.display = 'flex';
-    document.getElementById('passwordOverlay').style.flexDirection = 'column';
-    document.getElementById('passwordOverlay').style.alignItems = 'center';
-    document.getElementById('passwordOverlay').style.justifyContent = 'center';
-    setTimeout(() => document.getElementById('pinInput').focus(), 100);
-  } else {
-    completeLogin(nick);
-  }
-}
-
-function completeLogin(nick) {
-  CURRENT_USER = nick;
-  const p = PLAYERS.find(x => x.nick === nick);
-  document.getElementById('viewerBadge').textContent = `👤 ${p?.nick || nick}`;
-  document.getElementById('welcomeOverlay').classList.add('hidden');
-
-  // Show admin tab only for STEER
-  const adminTab = document.getElementById('adminTab');
-  if (nick === 'STEER') {
-    adminTab.style.display = '';
-  } else {
-    adminTab.style.display = 'none';
-    // If somehow on admin tab, switch to overview
-    const adminPane = document.getElementById('tab-admin');
-    if (adminPane?.classList.contains('active')) showTab('overview', document.querySelector('.tab'));
-  }
-
-  renderWeeklyWinners();
-  renderStandings();
-  renderMoney();
-  renderChips();
-  renderTrajectory();
-  startSession(nick);
-}
-
-// ═══════════════════ ADMIN PANEL ═══════════════════
-
-async function loadAdminData() {
-  const tbody   = document.getElementById('adminTableBody');
-  const pbody   = document.getElementById('adminPlayerBody');
-  const summary = document.getElementById('adminSummary');
-  tbody.innerHTML   = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">Loading...</td></tr>';
-  pbody.innerHTML   = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">Loading...</td></tr>';
-  summary.innerHTML = '';
-
-  try {
-    const res  = await fetch(SCRIPT_URL + '?action=read', { redirect: 'follow' });
-    const rows = await res.json();
-    // rows[0] is the header row, rows[1+] are data
-    const data = rows.slice(1).map(r => ({
-      id: r[0], player_nick: r[1],
-      logged_in_at: r[2], logged_out_at: r[3],
-      duration_seconds: r[4] || 0, click_count: r[5] || 0
-    })).reverse();
-    const error = null;
-    if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">No sessions recorded yet.</td></tr>';
-      pbody.innerHTML = '<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted);">No data yet.</td></tr>';
-      return;
-    }
-
-    // ── Summary cards ──
-    const totalLogins   = data.length;
-    const uniquePlayers = [...new Set(data.map(r => r.player_nick))].length;
-    const avgDuration   = Math.round(data.filter(r => r.duration_seconds).reduce((a, r) => a + r.duration_seconds, 0) / (data.filter(r => r.duration_seconds).length || 1));
-    const mostActive    = Object.entries(data.reduce((acc, r) => { acc[r.player_nick] = (acc[r.player_nick]||0)+1; return acc; }, {}))
-                               .sort((a,b) => b[1]-a[1])[0];
-    const fmtDur = s => s >= 60 ? `${Math.floor(s/60)}m ${s%60}s` : `${s}s`;
-
-    summary.innerHTML = [
-      ['🔢', 'Total Logins',    totalLogins],
-      ['👥', 'Unique Players',  uniquePlayers],
-      ['⏱️', 'Avg Session',    avgDuration ? fmtDur(avgDuration) : '—'],
-      ['🏆', 'Most Active',     mostActive ? `${mostActive[0]} (${mostActive[1]})` : '—']
-    ].map(([ico, label, val]) => `
-      <div style="background:var(--card2);border-radius:10px;padding:16px;text-align:center;">
-        <div style="font-size:22px;">${ico}</div>
-        <div style="font-size:11px;color:var(--muted);margin:4px 0;">${label}</div>
-        <div style="font-size:18px;font-weight:800;color:var(--accent);">${val}</div>
-      </div>`).join('');
-
-    // ── All sessions table ──
-    tbody.innerHTML = data.map(r => {
-      const dt  = new Date(r.logged_in_at);
-      const dateStr = dt.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
-      const timeStr = dt.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
-      const dur = r.duration_seconds ? fmtDur(r.duration_seconds) : '—';
-      const isMe = r.player_nick === 'STEER';
-      return `<tr style="${isMe ? 'background:rgba(0,255,135,0.05);' : ''}border-bottom:1px solid var(--border);">
-        <td style="padding:10px 8px;font-weight:${isMe?'700':'400'};color:${isMe?'var(--accent)':'var(--text)'};">${r.player_nick}</td>
-        <td style="padding:10px 8px;font-size:12px;color:var(--muted);">${dateStr} ${timeStr}</td>
-        <td style="padding:10px 8px;text-align:right;font-size:13px;">${dur}</td>
-        <td style="padding:10px 8px;text-align:right;font-size:13px;">${r.click_count ?? 0}</td>
-      </tr>`;
-    }).join('');
-
-    // ── Per-player summary ──
-    const perPlayer = {};
-    data.forEach(r => {
-      if (!perPlayer[r.player_nick]) perPlayer[r.player_nick] = { logins: 0, totalDur: 0, durCount: 0, totalClicks: 0 };
-      perPlayer[r.player_nick].logins++;
-      if (r.duration_seconds) { perPlayer[r.player_nick].totalDur += r.duration_seconds; perPlayer[r.player_nick].durCount++; }
-      perPlayer[r.player_nick].totalClicks += (r.click_count ?? 0);
-    });
-    pbody.innerHTML = Object.entries(perPlayer)
-      .sort((a,b) => b[1].logins - a[1].logins)
-      .map(([nick, s]) => {
-        const avgDur  = s.durCount ? fmtDur(Math.round(s.totalDur / s.durCount)) : '—';
-        const avgClks = s.logins   ? Math.round(s.totalClicks / s.logins)         : 0;
-        const isMe    = nick === 'STEER';
-        return `<tr style="${isMe?'background:rgba(0,255,135,0.05);':''}border-bottom:1px solid var(--border);">
-          <td style="padding:10px 8px;font-weight:700;color:${isMe?'var(--accent)':'var(--text)'};">${nick}</td>
-          <td style="padding:10px 8px;text-align:right;">${s.logins}</td>
-          <td style="padding:10px 8px;text-align:right;font-size:13px;">${avgDur}</td>
-          <td style="padding:10px 8px;text-align:right;font-size:13px;">${avgClks}</td>
-        </tr>`;
-      }).join('');
-
-  } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--red);">Error loading data: ${e.message}</td></tr>`;
-  }
-}
-</script>
+<script src="data.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
