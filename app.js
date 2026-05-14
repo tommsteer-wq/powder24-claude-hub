@@ -305,10 +305,8 @@ async function renderAdmin() {
     DB.getChecklist()
   ]);
 
-  const lastSeen = DB.getLocalLastSeen();
-
   // --- Stat cards ---
-  const totalLogins      = Object.values(logins).reduce((a, b) => a + b, 0);
+  const totalLogins      = Object.values(logins).reduce((a, b) => a + (b.count || 0), 0);
   const localAgreements  = DB.getLocalAgreements();
   const mergedAgreements = { ...agreements, ...localAgreements };
   const signedCount      = Object.keys(mergedAgreements).length;
@@ -332,16 +330,18 @@ async function renderAdmin() {
   `).join('');
 
   // --- Merged team table ---
-  const maxLogins = Math.max(...TEAM.map(m => logins[m.name] || 0), 1);
-  const sorted = [...TEAM].sort((a, b) => (logins[b.name] || 0) - (logins[a.name] || 0));
+  const maxLogins = Math.max(...TEAM.map(m => (logins[m.name] || {}).count || 0), 1);
+  const sorted = [...TEAM].sort((a, b) => ((logins[b.name] || {}).count || 0) - ((logins[a.name] || {}).count || 0));
 
   let tHtml = '<thead><tr><th>Name</th><th>Basics</th><th>Checklist</th><th>Logins</th><th>Last Seen</th><th>Activity</th></tr></thead><tbody>';
   sorted.forEach(m => {
-    const sig = mergedAgreements[m.name];
-    const cl  = mergedChecklist[m.name];
-    const n   = logins[m.name] || 0;
-    const ls  = lastSeen[m.name] ? new Date(lastSeen[m.name]).toLocaleDateString('en-GB') : 'Never';
-    const pct = Math.round((n / maxLogins) * 100);
+    const sig      = mergedAgreements[m.name];
+    const cl       = mergedChecklist[m.name];
+    const entry    = logins[m.name] || {};
+    const n        = entry.count || 0;
+    const lsRaw    = entry.lastSeen;
+    const ls       = lsRaw ? new Date(lsRaw).toLocaleDateString('en-GB') : 'Never';
+    const pct      = Math.round((n / maxLogins) * 100);
     tHtml += `<tr>
       <td>${m.name}</td>
       <td><span class="status-pill ${sig ? 'status-yes' : 'status-no'}">${sig ? 'Signed' : 'Pending'}</span></td>

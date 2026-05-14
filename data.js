@@ -141,11 +141,14 @@ const DB = {
   },
 
   getLocalLogins() {
-    return JSON.parse(localStorage.getItem('p24_logins') || '{}');
-  },
-
-  getLocalLastSeen() {
-    return JSON.parse(localStorage.getItem('p24_lastseen') || '{}');
+    // Returns same shape as Sheet: { Name: { count, lastSeen } }
+    const counts   = JSON.parse(localStorage.getItem('p24_logins') || '{}');
+    const lastSeen = JSON.parse(localStorage.getItem('p24_lastseen') || '{}');
+    const merged = {};
+    Object.keys(counts).forEach(name => {
+      merged[name] = { count: counts[name], lastSeen: lastSeen[name] || null };
+    });
+    return merged;
   },
 
   async getLogins() {

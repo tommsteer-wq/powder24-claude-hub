@@ -112,7 +112,12 @@ function handleGetLogins() {
   const sheet = getSheet(SHEETS.LOGINS);
   const rows  = sheetToObjects(sheet);
   const data  = {};
-  rows.forEach(r => { data[r['Name']] = Number(r['Login Count']) || 0; });
+  rows.forEach(r => {
+    data[r['Name']] = {
+      count:    Number(r['Login Count']) || 0,
+      lastSeen: r['Last Seen'] || null
+    };
+  });
   return { ok: true, data };
 }
 
